@@ -2,49 +2,143 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>What Would They Say About Me?</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Me – Hear It While You're Here</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>What Would They Say About Me?</h1>
-      <p class="tagline">
-        Invite the people who matter to write what they'd say at your eulogy —
-        while you’re still here to read it.
+  <header class="site-header">
+    <div class="logo">About<span>Me</span></div>
+    <nav>
+      <a href="#vision">Vision</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#mental-health">Support</a>
+      <a href="#auth" class="btn btn-outline">Log in / Sign up</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero / Vision -->
+    <section id="vision" class="hero">
+      <div class="hero-text">
+        <h1>Hear the best things people would say about you – while you're still here.</h1>
+        <p class="quote">
+          “Too often we only say the best things about someone at their funeral, and miss the opportunity
+          to tell them how wonderful they really are when they are just a call away. This site is a chance
+          for you to hear from others how they feel about someone before they’re gone.”
+        </p>
+        <button class="btn primary" onclick="scrollToAuth()">Create your page</button>
+      </div>
+      <div class="hero-card">
+        <h2>Living Eulogy Preview</h2>
+        <p class="username">@jane-doe</p>
+        <div class="eulogy-card">
+          <p><strong>From:</strong> Dad</p>
+          <p>
+            I’m proud of the woman you’ve become. Your kindness, grit, and ridiculous laugh have carried this
+            family more times than you know.
+          </p>
+        </div>
+        <div class="eulogy-card">
+          <p><strong>From:</strong> Your best friend, Maya</p>
+          <p>
+            You were the first person who ever told me I mattered. I hope this page reminds you
+            how much you matter to all of us.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works / UI -->
+    <section id="how-it-works" class="section">
+      <h2>How About Me works</h2>
+      <div class="steps">
+        <div class="step">
+          <h3>1. Create your profile</h3>
+          <p>
+            Add a photo, share as much or as little about yourself as you want, and choose your privacy settings.
+          </p>
+        </div>
+        <div class="step">
+          <h3>2. Invite friends & family</h3>
+          <p>
+            Send a private link so the people who know you best can write a “living eulogy” or tribute.
+          </p>
+        </div>
+        <div class="step">
+          <h3>3. Read, save, and share</h3>
+          <p>
+            You decide what’s public or private. Keep messages just for you, or share them so others can comment.
+          </p>
+        </div>
+      </div>
+
+      <div class="ui-notes">
+        <h3>Privacy & control</h3>
+        <ul>
+          <li>Block or delete invitees at any time.</li>
+          <li>Mark each tribute as private or public.</li>
+          <li>Enable or disable comments on public posts.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Simple Auth UI (front-end only for now) -->
+    <section id="auth" class="section auth-section">
+      <div class="auth-card">
+        <h2>Get started</h2>
+        <p>Create an account to claim your About Me page.</p>
+        <form id="signup-form" onsubmit="fakeSignup(event)">
+          <label>
+            Username
+            <input type="text" id="username" required placeholder="your-name" />
+          </label>
+          <label>
+            Email
+            <input type="email" id="email" required placeholder="you@example.com" />
+          </label>
+          <label>
+            Password
+            <input type="password" id="password" required minlength="6" />
+          </label>
+          <button type="submit" class="btn primary">Create account</button>
+          <p id="signup-message" class="message"></p>
+        </form>
+      </div>
+      <div class="auth-info">
+        <h3>Your data, your call</h3>
+        <ul>
+          <li>We never sell your tributes.</li>
+          <li>You control who can post on your page.</li>
+          <li>Delete posts or your whole account any time.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Mental health resources -->
+    <section id="mental-health" class="section support-section">
+      <h2>If you’re struggling, you’re not alone.</h2>
+      <p>
+        Reading and writing these messages can bring up big feelings. If you need support right now, these
+        resources are free and confidential:
       </p>
-    </header>
-
-    <section class="form-section">
-      <h2>Share a Message</h2>
-      <form id="message-form">
-        <div class="field">
-          <label for="name">Your Name *</label>
-          <input id="name" type="text" required />
-        </div>
-
-        <div class="field">
-          <label for="relation">How do you know them?</label>
-          <input id="relation" type="text" placeholder="Friend, sister, coworker..." />
-        </div>
-
-        <div class="field">
-          <label for="text">What would you say? *</label>
-          <textarea id="text" rows="4" required></textarea>
-        </div>
-
-        <button type="submit">Post Message</button>
-        <p id="form-status" class="status"></p>
-      </form>
+      <ul class="resource-list">
+        <li><strong>988 Suicide &amp; Crisis Lifeline</strong> – Call or text <a href="tel:988">988</a>, or chat at <a href="https://988lifeline.org" target="_blank" rel="noreferrer">988lifeline.org</a></li>
+        <li><strong>Veterans Crisis Line</strong> – Call <a href="tel:988">988</a> then press 1, or text <a href="sms:838255">838255</a></li>
+        <li><strong>SAMHSA National Helpline</strong> – 1-800-662-HELP (4357)</li>
+        <li><strong>NAMI HelpLine</strong> – 1-800-950-NAMI (6264) or <a href="mailto:helpline@nami.org">helpline@nami.org</a></li>
+        <li><strong>The Trevor Project (LGBTQ+ youth)</strong> – 1-866-488-7386 or <a href="https://www.thetrevorproject.org/get-help/" target="_blank" rel="noreferrer">online chat & text</a></li>
+      </ul>
+      <p class="small-note">
+        You’ll also see a simple “Need support?” link on every private profile page that brings you back to this list.
+      </p>
     </section>
+  </main>
 
-    <section class="messages-section">
-      <h2>Messages</h2>
-      <div id="messages-list" class="messages-list"></div>
-    </section>
-  </div>
+  <footer class="site-footer">
+    <p>About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.</p>
+  </footer>
 
-  <script src="/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
