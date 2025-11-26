@@ -1,0 +1,267 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  line-height: 1.6;
+}
+
+a {
+  color: #7dd3fc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #1f2937;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.logo span {
+  color: #38bdf8;
+}
+
+.site-header nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.site-header nav a {
+  font-size: 0.9rem;
+}
+
+.btn {
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.btn-outline {
+  border: 1px solid #38bdf8;
+  background: transparent;
+  color: #e5e7eb;
+}
+
+.btn-outline:hover {
+  background: rgba(56, 189, 248, 0.15);
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: #0b1120;
+}
+
+.btn.primary:hover {
+  filter: brightness(1.05);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 2.5rem;
+  padding: 3rem 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.hero-text h1 {
+  font-size: 2.1rem;
+  margin-bottom: 1rem;
+}
+
+.hero-text .quote {
+  font-size: 0.95rem;
+  color: #cbd5f5;
+  margin-bottom: 1.5rem;
+}
+
+.hero-card {
+  background: #020617;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #1f2937;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+}
+
+.hero-card h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-card .username {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin-bottom: 1rem;
+}
+
+.eulogy-card {
+  background: #020617;
+  border: 1px solid #1f2937;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+
+.section h2 {
+  font-size: 1.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.step {
+  background: #020617;
+  border-radius: 0.9rem;
+  padding: 1.1rem;
+  border: 1px solid #1f2937;
+}
+
+.step h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ui-notes ul {
+  margin-left: 1.1rem;
+  list-style: disc;
+  color: #d1d5db;
+}
+
+.auth-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 2rem;
+}
+
+.auth-card,
+.auth-info {
+  background: #020617;
+  border-radius: 0.9rem;
+  padding: 1.25rem;
+  border: 1px solid #1f2937;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.auth-card label {
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+input {
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid #334155;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+input:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+.message {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #a7f3d0;
+}
+
+.auth-info ul {
+  margin-left: 1.1rem;
+  list-style: disc;
+  color: #d1d5db;
+}
+
+.support-section p {
+  margin-bottom: 1rem;
+}
+
+.resource-list {
+  list-style: disc;
+  margin-left: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.resource-list li {
+  margin-bottom: 0.4rem;
+}
+
+.small-note {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.site-footer {
+  border-top: 1px solid #1f2937;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .hero,
+  .auth-section {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero {
+    padding-top: 2rem;
+  }
+
+  .site-header nav {
+    gap: 0.6rem;
+  }
+
+  .site-header nav a {
+    font-size: 0.8rem;
+  }
+}
