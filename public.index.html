@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>What Would They Say About Me?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>What Would They Say About Me?</h1>
+      <p class="tagline">
+        Invite the people who matter to write what they'd say at your eulogy —
+        while you’re still here to read it.
+      </p>
+    </header>
+
+    <section class="form-section">
+      <h2>Share a Message</h2>
+      <form id="message-form">
+        <div class="field">
+          <label for="name">Your Name *</label>
+          <input id="name" type="text" required />
+        </div>
+
+        <div class="field">
+          <label for="relation">How do you know them?</label>
+          <input id="relation" type="text" placeholder="Friend, sister, coworker..." />
+        </div>
+
+        <div class="field">
+          <label for="text">What would you say? *</label>
+          <textarea id="text" rows="4" required></textarea>
+        </div>
+
+        <button type="submit">Post Message</button>
+        <p id="form-status" class="status"></p>
+      </form>
+    </section>
+
+    <section class="messages-section">
+      <h2>Messages</h2>
+      <div id="messages-list" class="messages-list"></div>
+    </section>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
