@@ -1,15 +1,21 @@
 {
-  "name": "what-would-they-say-about-me",
+  "name": "about-me",
   "version": "1.0.0",
-  "description": "Simple eulogy-style About Me app (Bobby Britton)",
+  "description": "About Me - living eulogy platform MVP",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "engines": {
+    "node": ">=18.x"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "mongoose": "^8.6.0"
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
