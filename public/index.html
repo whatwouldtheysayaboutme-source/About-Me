@@ -17,6 +17,11 @@
     </nav>
   </header>
 
+  <!-- INVITE BANNER (shown when ?to=... is present) -->
+  <div id="invite-banner" class="invite-banner" style="display:none; padding:16px; background:#e6f0ff; border-bottom:1px solid #ccd9ff;">
+    <!-- Filled by JavaScript when ?to= is in the URL -->
+  </div>
+
   <main>
     <!-- Hero / Vision -->
     <section id="vision" class="hero">
@@ -83,7 +88,15 @@
       </div>
     </section>
 
-    <!-- Auth section: real signup + login wired to backend -->
+    <!-- GOOGLE AD SPACE (placeholder for AdSense) -->
+    <section id="ads" class="section ad-section">
+      <h2>Sponsored</h2>
+      <div id="ad-slot" class="ad-slot" style="min-height:120px; border:1px dashed #aaa; display:flex; align-items:center; justify-content:center;">
+        <p>Ad space reserved. Google AdSense will appear here.</p>
+      </div>
+    </section>
+
+    <!-- Auth section: signup + login wired to backend -->
     <section id="auth" class="section auth-section">
       <div class="auth-card">
         <h2>Create your account</h2>
@@ -123,6 +136,22 @@
       </div>
     </section>
 
+    <!-- Invite link panel (visible after login / signup) -->
+    <section id="invite-section" class="section" style="display:none;">
+      <h2>Your invite link</h2>
+      <p>
+        Share this link so friends and family can visit your About Me page, read your story, and start their own.
+      </p>
+      <div style="display:flex; gap:8px; max-width:600px; align-items:center;">
+        <input id="invite-link-input" type="text" readonly style="flex:1; padding:8px;" />
+        <button class="btn btn-outline" type="button" onclick="copyInviteLink()">Copy link</button>
+      </div>
+      <p id="invite-link-message" class="small-note"></p>
+      <p class="small-note">
+        You can paste this into an email or message along with your invite text.
+      </p>
+    </section>
+
     <!-- Mental health resources -->
     <section id="mental-health" class="section support-section">
       <h2>If you’re struggling, you’re not alone.</h2>
@@ -138,7 +167,8 @@
         <li><strong>The Trevor Project (LGBTQ+ youth)</strong> – 1-866-488-7386 or <a href="https://www.thetrevorproject.org/get-help/" target="_blank" rel="noreferrer">online chat & text</a></li>
       </ul>
       <p class="small-note">
-        You’ll also see a simple “Need support?” link on every private profile page that brings you back to this list.
+        Have ideas to make About Me better?
+        <a href="mailto:whatwouldtheysayaboutme@gmail.com">Send us your feedback</a>.
       </p>
     </section>
   </main>
@@ -147,12 +177,53 @@
     <p>About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.</p>
   </footer>
 
-  <!-- Auth + helper scripts -->
+  <!-- Auth + invite + helper scripts -->
   <script>
+    let currentUser = null;
+
     function scrollToAuth() {
       const el = document.getElementById('auth');
       if (el) {
         el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function updateInviteSection() {
+      const section = document.getElementById('invite-section');
+      const input = document.getElementById('invite-link-input');
+      const msg = document.getElementById('invite-link-message');
+
+      if (!currentUser || !currentUser.id) {
+        if (section) section.style.display = 'none';
+        return;
+      }
+
+      const baseUrl = window.location.origin;
+      const inviteUrl = baseUrl + '/?to=' + encodeURIComponent(currentUser.id) +
+        '&name=' + encodeURIComponent(currentUser.name || 'A friend');
+
+      if (input) {
+        input.value = inviteUrl;
+      }
+      if (section) {
+        section.style.display = 'block';
+      }
+      if (msg) {
+        msg.textContent = 'Share this link with people you trust. They\'ll land on your About Me page and see instructions on what to do.';
+      }
+    }
+
+    function copyInviteLink() {
+      const input = document.getElementById('invite-link-input');
+      const msg = document.getElementById('invite-link-message');
+      if (!input) return;
+
+      input.select();
+      input.setSelectionRange(0, 99999);
+      document.execCommand('copy');
+
+      if (msg) {
+        msg.textContent = 'Invite link copied to clipboard.';
       }
     }
 
@@ -163,8 +234,10 @@
       const password = document.getElementById('reg-password').value;
 
       const messageBox = document.getElementById('auth-message');
-      messageBox.style.color = 'inherit';
-      messageBox.textContent = 'Creating your account...';
+      if (messageBox) {
+        messageBox.style.color = 'inherit';
+        messageBox.textContent = 'Creating your account...';
+      }
 
       try {
         const res = await fetch('/api/register', {
@@ -176,17 +249,25 @@
         const data = await res.json();
 
         if (data.ok) {
-          messageBox.style.color = 'green';
-          messageBox.textContent = 'Account created! You can now log in.';
+          if (messageBox) {
+            messageBox.style.color = 'green';
+            messageBox.textContent = 'Thanks, ' + email + '. Your About Me page is coming soon.';
+          }
           document.getElementById('signup-form').reset();
+          currentUser = { id: data.userId, name, email };
+          updateInviteSection();
         } else {
-          messageBox.style.color = 'red';
-          messageBox.textContent = data.error || 'Something went wrong.';
+          if (messageBox) {
+            messageBox.style.color = 'red';
+            messageBox.textContent = data.error || 'Something went wrong.';
+          }
         }
       } catch (err) {
         console.error(err);
-        messageBox.style.color = 'red';
-        messageBox.textContent = 'Network error. Please try again.';
+        if (messageBox) {
+          messageBox.style.color = 'red';
+          messageBox.textContent = 'Network error. Please try again.';
+        }
       }
     }
 
@@ -196,8 +277,10 @@
       const password = document.getElementById('login-password').value;
 
       const messageBox = document.getElementById('auth-message');
-      messageBox.style.color = 'inherit';
-      messageBox.textContent = 'Logging in...';
+      if (messageBox) {
+        messageBox.style.color = 'inherit';
+        messageBox.textContent = 'Logging in...';
+      }
 
       try {
         const res = await fetch('/api/login', {
@@ -209,19 +292,60 @@
         const data = await res.json();
 
         if (data.ok) {
-          messageBox.style.color = 'green';
-          messageBox.textContent = 'Welcome, ' + data.user.name + '!';
-          // later: redirect to user dashboard/profile page
+          if (messageBox) {
+            messageBox.style.color = 'green';
+            messageBox.textContent = 'Welcome, ' + data.user.name + '!';
+          }
+          currentUser = data.user;
+          updateInviteSection();
         } else {
-          messageBox.style.color = 'red';
-          messageBox.textContent = data.error || 'Login failed.';
+          if (messageBox) {
+            messageBox.style.color = 'red';
+            messageBox.textContent = data.error || 'Login failed.';
+          }
         }
       } catch (err) {
         console.error(err);
-        messageBox.style.color = 'red';
-        messageBox.textContent = 'Network error. Please try again.';
+        if (messageBox) {
+          messageBox.style.color = 'red';
+          messageBox.textContent = 'Network error. Please try again.';
+        }
       }
     }
+
+    // Show invite banner if ?to= is present
+    (function showInviteBannerFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const toId = params.get('to');
+      const toName = params.get('name') || 'someone';
+
+      if (!toId) return;
+
+      const banner = document.getElementById('invite-banner');
+      if (!banner) return;
+
+      const safeName = toName.replace(/\+/g, ' ');
+
+      const html = `
+        <p><strong>Hi, you’ve been invited to ${safeName}’s About Me page.</strong></p>
+        <p>
+          What is About Me? It's a chance to honor and pay tribute to someone who values your thoughts.
+          Too many times people only realize how amazing someone is too late, after they are gone.
+          What you can do today is eulogize your connection as you would if they were gone,
+          but they get to see it now.
+        </p>
+        <p>
+          All you have to do is scroll down, read more about how it works, and—soon—add your own passage
+          about ${safeName}. You’ll also have the option to create your own page and send invites.
+        </p>
+        <button class="btn primary" type="button" onclick="scrollToAuth()">
+          Create your own page & send invites
+        </button>
+      `;
+
+      banner.innerHTML = html;
+      banner.style.display = 'block';
+    })();
 
     // Set footer year
     document.getElementById('year').textContent = new Date().getFullYear();
