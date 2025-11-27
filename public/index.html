@@ -138,6 +138,33 @@
   <footer class="site-footer">
     <p>About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.</p>
   </footer>
+<!-- Simple Auth Box -->
+<div id="auth-box" style="margin-top:40px; padding:20px; border:1px solid #ccc; width:300px;">
+  <h3>Sign Up</h3>
+  <input id="reg-name" placeholder="Name" style="width:100%; margin-bottom:6px;"><br>
+  <input id="reg-email" placeholder="Email" style="width:100%; margin-bottom:6px;"><br>
+  <input id="reg-password" type="password" placeholder="Password" style="width:100%; margin-bottom:6px;"><br>
+  <button onclick="register()">Create Account</button>
+
+  <hr style="margin:20px 0;">
+
+  <h3>Log In</h3>
+  <input id="login-email" placeholder="Email" style="width:100%; margin-bottom:6px;"><br>
+  <input id="login-password" type="password" placeholder="Password" style="width:100%; margin-bottom:6px;"><br>
+  <button onclick="login()">Log In</button>
+
+  <p id="auth-message" style="margin-top:10px; color:green;"></p>
+</div>
+
+<script>
+async function register() {
+  const name = document.getElementById('reg-name').value;
+  const email = document.getElementById('reg-email').value;
+  const password = document.getElementById('reg-password').value;
+
+  const res = await fetch('/api/register', {
+    method: 'POST',
+    heade
 
   <script src="app.js"></script>
 </body>
