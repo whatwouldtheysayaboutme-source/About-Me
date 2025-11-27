@@ -78,4 +78,35 @@ app.post('/api/login', async (req, res) => {
     const users = db.collection('users');
     const normalizedEmail = email.toLowerCase().trim();
 
-    const user = await users.findOne({
+    const user = await users.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    const matches = await bcrypt.compare(password, user.passwordHash);
+    if (!matches) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    return res.json({
+      ok: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      }
+    });
+  } catch (err) {
+    console.error('/api/login error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+async function start() {
+  await connectToMongo();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+start();
