@@ -260,6 +260,25 @@ input:focus {
   .site-header nav {
     gap: 0.6rem;
   }
+/* INVITE BANNER FIX */
+#invite-banner {
+  display: none;
+  background: #1f2937;
+  color: #fff;
+  padding: 20px;
+  margin-top: 80px; /* pushes it below the nav header */
+  border-left: 4px solid #60a5fa;
+  border-radius: 6px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+#invite-banner button {
+  margin-top: 15px;
+}
 
   .site-header nav a {
     font-size: 0.8rem;
