@@ -330,21 +330,19 @@
       const safeName = toName.replace(/\+/g, ' ');
 
       const html = `
-        <p><strong>Hi, you’ve been invited to ${safeName}’s About Me page.</strong></p>
-        <p>
-          What is About Me? It's a chance to honor and pay tribute to someone who values your thoughts.
-          Too many times people only realize how amazing someone is too late, after they are gone.
-          What you can do today is eulogize your connection as you would if they were gone,
-          but they get to see it now.
-        </p>
-        <p>
-          All you have to do is scroll down, read more about how it works, and—soon—add your own passage
-          about ${safeName}. You’ll also have the option to create your own page and send invites.
-        </p>
-        <button class="btn primary" type="button" onclick="scrollToAuth()">
-          Create your own page & send invites
-        </button>
-      `;
+  <p><strong>Hi, ${safeName} is inviting you to their About Me page.</strong></p>
+  <p>
+    What is About Me? It’s a place to honor someone who values your thoughts.
+    Too often, people only hear how much someone meant after they're gone.
+  </p>
+  <p>
+    Here, you can write what you would say in a eulogy — but they get to see it now.
+    Click below to visit their page and share your message.
+    You can keep your tribute private or public.
+  </p>
+  <button class="btn primary" type="button" onclick="scrollToAuth()">
+    Create your own page & send invites
+  </button>
 
       banner.innerHTML = html;
       banner.style.display = 'block';
