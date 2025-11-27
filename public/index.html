@@ -83,35 +83,43 @@
       </div>
     </section>
 
-    <!-- Simple Auth UI (front-end only for now) -->
+    <!-- Auth section: real signup + login wired to backend -->
     <section id="auth" class="section auth-section">
       <div class="auth-card">
-        <h2>Get started</h2>
+        <h2>Create your account</h2>
         <p>Create an account to claim your About Me page.</p>
-        <form id="signup-form" onsubmit="fakeSignup(event)">
+        <form id="signup-form" onsubmit="handleRegister(event)">
           <label>
-            Username
-            <input type="text" id="username" required placeholder="your-name" />
+            Name
+            <input type="text" id="reg-name" required placeholder="Your name" />
           </label>
           <label>
             Email
-            <input type="email" id="email" required placeholder="you@example.com" />
+            <input type="email" id="reg-email" required placeholder="you@example.com" />
           </label>
           <label>
             Password
-            <input type="password" id="password" required minlength="6" />
+            <input type="password" id="reg-password" required minlength="6" />
           </label>
           <button type="submit" class="btn primary">Create account</button>
-          <p id="signup-message" class="message"></p>
         </form>
       </div>
-      <div class="auth-info">
-        <h3>Your data, your call</h3>
-        <ul>
-          <li>We never sell your tributes.</li>
-          <li>You control who can post on your page.</li>
-          <li>Delete posts or your whole account any time.</li>
-        </ul>
+
+      <div class="auth-card">
+        <h2>Already have an account?</h2>
+        <p>Log in to view or update your page.</p>
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <label>
+            Email
+            <input type="email" id="login-email" required placeholder="you@example.com" />
+          </label>
+          <label>
+            Password
+            <input type="password" id="login-password" required />
+          </label>
+          <button type="submit" class="btn btn-outline">Log in</button>
+        </form>
+        <p id="auth-message" class="message"></p>
       </div>
     </section>
 
@@ -138,34 +146,88 @@
   <footer class="site-footer">
     <p>About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.</p>
   </footer>
-<!-- Simple Auth Box -->
-<div id="auth-box" style="margin-top:40px; padding:20px; border:1px solid #ccc; width:300px;">
-  <h3>Sign Up</h3>
-  <input id="reg-name" placeholder="Name" style="width:100%; margin-bottom:6px;"><br>
-  <input id="reg-email" placeholder="Email" style="width:100%; margin-bottom:6px;"><br>
-  <input id="reg-password" type="password" placeholder="Password" style="width:100%; margin-bottom:6px;"><br>
-  <button onclick="register()">Create Account</button>
 
-  <hr style="margin:20px 0;">
+  <!-- Auth + helper scripts -->
+  <script>
+    function scrollToAuth() {
+      const el = document.getElementById('auth');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
 
-  <h3>Log In</h3>
-  <input id="login-email" placeholder="Email" style="width:100%; margin-bottom:6px;"><br>
-  <input id="login-password" type="password" placeholder="Password" style="width:100%; margin-bottom:6px;"><br>
-  <button onclick="login()">Log In</button>
+    async function handleRegister(event) {
+      event.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
 
-  <p id="auth-message" style="margin-top:10px; color:green;"></p>
-</div>
+      const messageBox = document.getElementById('auth-message');
+      messageBox.style.color = 'inherit';
+      messageBox.textContent = 'Creating your account...';
 
-<script>
-async function register() {
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-password').value;
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
 
-  const res = await fetch('/api/register', {
-    method: 'POST',
-    heade
+        const data = await res.json();
 
+        if (data.ok) {
+          messageBox.style.color = 'green';
+          messageBox.textContent = 'Account created! You can now log in.';
+          document.getElementById('signup-form').reset();
+        } else {
+          messageBox.style.color = 'red';
+          messageBox.textContent = data.error || 'Something went wrong.';
+        }
+      } catch (err) {
+        console.error(err);
+        messageBox.style.color = 'red';
+        messageBox.textContent = 'Network error. Please try again.';
+      }
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      const messageBox = document.getElementById('auth-message');
+      messageBox.style.color = 'inherit';
+      messageBox.textContent = 'Logging in...';
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          messageBox.style.color = 'green';
+          messageBox.textContent = 'Welcome, ' + data.user.name + '!';
+          // later: redirect to user dashboard/profile page
+        } else {
+          messageBox.style.color = 'red';
+          messageBox.textContent = data.error || 'Login failed.';
+        }
+      } catch (err) {
+        console.error(err);
+        messageBox.style.color = 'red';
+        messageBox.textContent = 'Network error. Please try again.';
+      }
+    }
+
+    // Set footer year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+  <!-- Your existing app.js (if you still want to use it) -->
   <script src="app.js"></script>
 </body>
 </html>
