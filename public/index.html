@@ -5,15 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About Me – Hear It While You're Here</title>
 
-  <!-- Google AdSense -->
+  <!-- Google AdSense (keep this as-is) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7043536983013836"
           crossorigin="anonymous"></script>
 
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-
-  <!-- Site header -->
   <header class="site-header">
     <div class="logo">About<span>Me</span></div>
     <nav>
@@ -24,8 +22,8 @@
     </nav>
   </header>
 
-  <!-- Invite banner (JS fills this if ?to= is present) -->
-  <div id="invite-banner"></div>
+  <!-- INVITE BANNER (shown when ?to=friend&name=... is present) -->
+  <div id="invite-banner" class="invite-banner" style="display:none;"></div>
 
   <main>
     <!-- Hero / Vision -->
@@ -37,7 +35,9 @@
           to tell them how wonderful they really are when they are just a call away. This site is a chance
           for you to hear from others how they feel about someone before they’re gone.”
         </p>
-        <button class="btn primary" onclick="scrollToAuth()">Create your page</button>
+        <button class="btn primary" onclick="document.querySelector('#share').scrollIntoView({behavior:'smooth'})">
+          Create your page
+        </button>
       </div>
       <div class="hero-card">
         <h2>Living Eulogy Preview</h2>
@@ -70,7 +70,7 @@
           </p>
         </div>
         <div class="step">
-          <h3>2. Invite friends & family</h3>
+          <h3>2. Invite friends &amp; family</h3>
           <p>
             Send a private link so the people who know you best can write a “living eulogy” or tribute.
           </p>
@@ -84,7 +84,7 @@
       </div>
 
       <div class="ui-notes">
-        <h3>Privacy & control</h3>
+        <h3>Privacy &amp; control</h3>
         <ul>
           <li>Block or delete invitees at any time.</li>
           <li>Mark each tribute as private or public.</li>
@@ -93,36 +93,51 @@
       </div>
     </section>
 
-    <!-- Tribute writing section (for invitees) -->
-    <section id="tribute" class="section tribute-section">
-      <h2>Write a tribute</h2>
-      <p id="tribute-intro">
-        Use this space to write a living eulogy or tribute for the person who invited you.
-        Share a story, a memory, or what you appreciate about them.
+    <!-- SHARE YOUR PAGE (BETA) -->
+    <section id="share" class="section share-section">
+      <h2>Share your About Me page</h2>
+      <p>
+        In this beta, you can generate a personal link to send to friends and family.
+        When they open it, they’ll see an invitation to write a message for you.
       </p>
 
-      <form id="tribute-form">
+      <div class="share-form">
         <label>
-          Your name (optional)
-          <input type="text" id="tribute-from" placeholder="Your name" />
+          Your name (as you want it to appear)
+          <input type="text" id="share-name" placeholder="Bobby Britton" />
         </label>
-        <label>
-          Your tribute for <span id="tribute-for">them</span>
-          <textarea id="tribute-text" rows="6"
-                    placeholder="What would you want them to hear from you?"
-                    required></textarea>
-        </label>
-        <button type="submit" class="btn primary">Send tribute</button>
-        <p id="tribute-message" class="message"></p>
-      </form>
+
+        <button class="btn primary" id="share-generate">Generate invite link</button>
+
+        <div id="share-result" class="share-result" style="display:none;">
+          <input type="text" id="share-url" readonly />
+          <button class="btn btn-outline" id="share-copy">Copy link</button>
+        </div>
+        <p id="share-status" class="small-note"></p>
+      </div>
     </section>
 
-    <!-- Auth / sign up -->
+    <!-- WRITE YOUR MESSAGE (for invitees) -->
+    <section id="write" class="section write-section">
+      <h2>Write your message</h2>
+      <p id="write-to-line" class="small-note">
+        If you followed a friend’s link, this is where you can write what they mean to you.
+      </p>
+      <p class="small-note">
+        <strong>Beta note:</strong> Messages aren’t stored yet. After writing, click “Copy message”
+        and paste it into a text, email, or DM so they can read it.
+      </p>
+      <textarea id="tribute-text" placeholder="Write what you would say in a eulogy – but while they’re still here."></textarea>
+      <button class="btn primary" id="copy-tribute">Copy message</button>
+      <p id="tribute-status" class="small-note"></p>
+    </section>
+
+    <!-- Simple Auth UI (front-end only for now) -->
     <section id="auth" class="section auth-section">
       <div class="auth-card">
         <h2>Get started</h2>
-        <p>Create an account to claim your About Me page.</p>
-        <form id="signup-form" onsubmit="fakeSignup(event)">
+        <p>Create an account to claim your About Me page (coming in a future version).</p>
+        <form id="signup-form" onsubmit="event.preventDefault(); alert('In this beta, sign-up is just a preview.');">
           <label>
             Username
             <input type="text" id="username" required placeholder="your-name" />
@@ -135,21 +150,8 @@
             Password
             <input type="password" id="password" required minlength="6" />
           </label>
-
-          <!-- Consent / waiver -->
-          <label class="consent-row">
-            <input type="checkbox" id="consent" required />
-            <span>
-              I understand that I am responsible for what I write on About Me, and I agree not to post
-              threats, harassment, or illegal content. I will not hold About Me or its creator liable
-              for what I or others choose to share on the site.
-            </span>
-          </label>
-
           <button type="submit" class="btn primary">Create account</button>
-          <p id="signup-message" class="message small-note">
-            (This consent text is not legal advice; formal Terms of Service will be added later.)
-          </p>
+          <p id="signup-message" class="message"></p>
         </form>
       </div>
       <div class="auth-info">
@@ -174,27 +176,39 @@
         <li><strong>Veterans Crisis Line</strong> – Call <a href="tel:988">988</a> then press 1, or text <a href="sms:838255">838255</a></li>
         <li><strong>SAMHSA National Helpline</strong> – 1-800-662-HELP (4357)</li>
         <li><strong>NAMI HelpLine</strong> – 1-800-950-NAMI (6264) or <a href="mailto:helpline@nami.org">helpline@nami.org</a></li>
-        <li><strong>The Trevor Project (LGBTQ+ youth)</strong> – 1-866-488-7386 or <a href="https://www.thetrevorproject.org/get-help/" target="_blank" rel="noreferrer">online chat & text</a></li>
+        <li><strong>The Trevor Project (LGBTQ+ youth)</strong> – 1-866-488-7386 or <a href="https://www.thetrevorproject.org/get-help/" target="_blank" rel="noreferrer">online chat &amp; text</a></li>
       </ul>
       <p class="small-note">
-        You’ll also see a simple “Need support?” link on every private profile page that brings you back to this list.
+        You’ll also see a simple “Need support?” link on every private profile page that brings you back to this list in a future version.
       </p>
+    </section>
+
+    <!-- AdSense block -->
+    <section class="section ads-section">
+      <p class="small-note center">Ads help keep About Me free.</p>
+      <!-- TODO: replace data-ad-slot with your real AdSense slot ID -->
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-7043536983013836"
+           data-ad-slot="0000000000"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
     </section>
   </main>
 
   <footer class="site-footer">
-    <p>
-      About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.
-    </p>
-    <p class="book-link">
-      <a href="https://books2read.com/runninginthe80s"
-         target="_blank"
-         rel="noreferrer">
-        Read Bobby Britton’s book <em>Running in the 80s</em>
-      </a>
+    <p>About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.</p>
+    <p class="small-note">
+      Beta only – messages are not stored yet. By using this site you understand it’s a work in progress.
+      | Check out the book that inspired this: 
+      <a href="https://books2read.com/runninginthe80s" target="_blank" rel="noreferrer">Running in the 80s</a>.
     </p>
   </footer>
 
+  <!-- App script + AdSense call -->
   <script src="app.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
 </body>
 </html>
