@@ -4,14 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About Me – Hear It While You're Here</title>
- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7043536983013836"
-        crossorigin="anonymous"></script>
 
-<link rel="stylesheet" href="styles.css" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7043536983013836"
+          crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<body>
 
+  <!-- Site header -->
   <header class="site-header">
     <div class="logo">About<span>Me</span></div>
     <nav>
@@ -24,8 +26,6 @@
 
   <!-- Invite banner (JS fills this if ?to= is present) -->
   <div id="invite-banner"></div>
-
-  <main>
 
   <main>
     <!-- Hero / Vision -->
@@ -59,7 +59,7 @@
       </div>
     </section>
 
-    <!-- How it works / UI -->
+    <!-- How it works -->
     <section id="how-it-works" class="section">
       <h2>How About Me works</h2>
       <div class="steps">
@@ -93,77 +93,73 @@
       </div>
     </section>
 
-   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7043536983013836"
-     crossorigin="anonymous"></script>
+    <!-- Tribute writing section (for invitees) -->
+    <section id="tribute" class="section tribute-section">
+      <h2>Write a tribute</h2>
+      <p id="tribute-intro">
+        Use this space to write a living eulogy or tribute for the person who invited you.
+        Share a story, a memory, or what you appreciate about them.
+      </p>
 
-    <!-- Auth section: signup + login wired to backend -->
+      <form id="tribute-form">
+        <label>
+          Your name (optional)
+          <input type="text" id="tribute-from" placeholder="Your name" />
+        </label>
+        <label>
+          Your tribute for <span id="tribute-for">them</span>
+          <textarea id="tribute-text" rows="6"
+                    placeholder="What would you want them to hear from you?"
+                    required></textarea>
+        </label>
+        <button type="submit" class="btn primary">Send tribute</button>
+        <p id="tribute-message" class="message"></p>
+      </form>
+    </section>
+
+    <!-- Auth / sign up -->
     <section id="auth" class="section auth-section">
       <div class="auth-card">
-        <h2>Create your account</h2>
+        <h2>Get started</h2>
         <p>Create an account to claim your About Me page.</p>
         <form id="signup-form" onsubmit="fakeSignup(event)">
-  <label>
-    Username
-    <input type="text" id="username" required placeholder="your-name" />
-  </label>
-  <label>
-    Email
-    <input type="email" id="email" required placeholder="you@example.com" />
-  </label>
-  <label>
-    Password
-    <input type="password" id="password" required minlength="6" />
-  </label>
-
-  <!-- Consent / waiver -->
-  <label class="consent-row">
-    <input type="checkbox" id="consent" required />
-    <span>
-      I understand that I am responsible for what I write on About Me, and I agree not to post
-      threats, harassment, or illegal content. I will not hold About Me or its creator liable
-      for what I or others choose to share on the site.
-    </span>
-  </label>
-
-  <button type="submit" class="btn primary">Create account</button>
-  <p id="signup-message" class="message small-note">
-    (This consent text is not legal advice; formal Terms of Service will be added later.)
-  </p>
-</form>
-
-
-      <div class="auth-card">
-        <h2>Already have an account?</h2>
-        <p>Log in to view or update your page.</p>
-        <form id="login-form" onsubmit="handleLogin(event)">
+          <label>
+            Username
+            <input type="text" id="username" required placeholder="your-name" />
+          </label>
           <label>
             Email
-            <input type="email" id="login-email" required placeholder="you@example.com" />
+            <input type="email" id="email" required placeholder="you@example.com" />
           </label>
           <label>
             Password
-            <input type="password" id="login-password" required />
+            <input type="password" id="password" required minlength="6" />
           </label>
-          <button type="submit" class="btn btn-outline">Log in</button>
-        </form>
-        <p id="auth-message" class="message"></p>
-      </div>
-    </section>
 
-    <!-- Invite link panel (visible after login / signup) -->
-    <section id="invite-section" class="section" style="display:none;">
-      <h2>Your invite link</h2>
-      <p>
-        Share this link so friends and family can visit your About Me page, read your story, and start their own.
-      </p>
-      <div style="display:flex; gap:8px; max-width:600px; align-items:center;">
-        <input id="invite-link-input" type="text" readonly style="flex:1; padding:8px;" />
-        <button class="btn btn-outline" type="button" onclick="copyInviteLink()">Copy link</button>
+          <!-- Consent / waiver -->
+          <label class="consent-row">
+            <input type="checkbox" id="consent" required />
+            <span>
+              I understand that I am responsible for what I write on About Me, and I agree not to post
+              threats, harassment, or illegal content. I will not hold About Me or its creator liable
+              for what I or others choose to share on the site.
+            </span>
+          </label>
+
+          <button type="submit" class="btn primary">Create account</button>
+          <p id="signup-message" class="message small-note">
+            (This consent text is not legal advice; formal Terms of Service will be added later.)
+          </p>
+        </form>
       </div>
-      <p id="invite-link-message" class="small-note"></p>
-      <p class="small-note">
-        You can paste this into an email or message along with your invite text.
-      </p>
+      <div class="auth-info">
+        <h3>Your data, your call</h3>
+        <ul>
+          <li>We never sell your tributes.</li>
+          <li>You control who can post on your page.</li>
+          <li>Delete posts or your whole account any time.</li>
+        </ul>
+      </div>
     </section>
 
     <!-- Mental health resources -->
@@ -181,198 +177,24 @@
         <li><strong>The Trevor Project (LGBTQ+ youth)</strong> – 1-866-488-7386 or <a href="https://www.thetrevorproject.org/get-help/" target="_blank" rel="noreferrer">online chat & text</a></li>
       </ul>
       <p class="small-note">
-        Have ideas to make About Me better?
-        <a href="mailto:whatwouldtheysayaboutme@gmail.com">Send us your feedback</a>.
+        You’ll also see a simple “Need support?” link on every private profile page that brings you back to this list.
       </p>
     </section>
   </main>
 
   <footer class="site-footer">
-  <p>
-    About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.
-  </p>
-  <p class="book-link">
-    <a href="https://books2read.com/runninginthe80s"
-       target="_blank"
-       rel="noreferrer">
-      Read Bobby Britton’s book <em>Running in the 80s</em>
-    </a>
-  </p>
-</footer>
+    <p>
+      About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.
+    </p>
+    <p class="book-link">
+      <a href="https://books2read.com/runninginthe80s"
+         target="_blank"
+         rel="noreferrer">
+        Read Bobby Britton’s book <em>Running in the 80s</em>
+      </a>
+    </p>
+  </footer>
 
-  <!-- Auth + invite + helper scripts -->
-  <script>
-    let currentUser = null;
-
-    function scrollToAuth() {
-      const el = document.getElementById('auth');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-
-    function updateInviteSection() {
-      const section = document.getElementById('invite-section');
-      const input = document.getElementById('invite-link-input');
-      const msg = document.getElementById('invite-link-message');
-
-      if (!currentUser || !currentUser.id) {
-        if (section) section.style.display = 'none';
-        return;
-      }
-
-      const baseUrl = window.location.origin;
-      const inviteUrl = baseUrl + '/?to=' + encodeURIComponent(currentUser.id) +
-        '&name=' + encodeURIComponent(currentUser.name || 'A friend');
-
-      if (input) {
-        input.value = inviteUrl;
-      }
-      if (section) {
-        section.style.display = 'block';
-      }
-      if (msg) {
-        msg.textContent = 'Share this link with people you trust. They\'ll land on your About Me page and see instructions on what to do.';
-      }
-    }
-
-    function copyInviteLink() {
-      const input = document.getElementById('invite-link-input');
-      const msg = document.getElementById('invite-link-message');
-      if (!input) return;
-
-      input.select();
-      input.setSelectionRange(0, 99999);
-      document.execCommand('copy');
-
-      if (msg) {
-        msg.textContent = 'Invite link copied to clipboard.';
-      }
-    }
-
-    async function handleRegister(event) {
-      event.preventDefault();
-      const name = document.getElementById('reg-name').value;
-      const email = document.getElementById('reg-email').value;
-      const password = document.getElementById('reg-password').value;
-
-      const messageBox = document.getElementById('auth-message');
-      if (messageBox) {
-        messageBox.style.color = 'inherit';
-        messageBox.textContent = 'Creating your account...';
-      }
-
-      try {
-        const res = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password })
-        });
-
-        const data = await res.json();
-
-        if (data.ok) {
-          if (messageBox) {
-            messageBox.style.color = 'green';
-            messageBox.textContent = 'Thanks, ' + email + '. Your About Me page is coming soon.';
-          }
-          document.getElementById('signup-form').reset();
-          currentUser = { id: data.userId, name, email };
-          updateInviteSection();
-        } else {
-          if (messageBox) {
-            messageBox.style.color = 'red';
-            messageBox.textContent = data.error || 'Something went wrong.';
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        if (messageBox) {
-          messageBox.style.color = 'red';
-          messageBox.textContent = 'Network error. Please try again.';
-        }
-      }
-    }
-
-    async function handleLogin(event) {
-      event.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-
-      const messageBox = document.getElementById('auth-message');
-      if (messageBox) {
-        messageBox.style.color = 'inherit';
-        messageBox.textContent = 'Logging in...';
-      }
-
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        if (data.ok) {
-          if (messageBox) {
-            messageBox.style.color = 'green';
-            messageBox.textContent = 'Welcome, ' + data.user.name + '!';
-          }
-          currentUser = data.user;
-          updateInviteSection();
-        } else {
-          if (messageBox) {
-            messageBox.style.color = 'red';
-            messageBox.textContent = data.error || 'Login failed.';
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        if (messageBox) {
-          messageBox.style.color = 'red';
-          messageBox.textContent = 'Network error. Please try again.';
-        }
-      }
-    }
-
-    // Show invite banner if ?to= is present
-    (function showInviteBannerFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      const toId = params.get('to');
-      const toName = params.get('name') || 'someone';
-
-      if (!toId) return;
-
-      const banner = document.getElementById('invite-banner');
-      if (!banner) return;
-
-      const safeName = toName.replace(/\+/g, ' ');
-
-      const html = `
-  <p><strong>Hi, ${safeName} is inviting you to their About Me page.</strong></p>
-  <p>
-    What is About Me? It’s a place to honor someone who values your thoughts.
-    Too often, people only hear how much someone meant after they're gone.
-  </p>
-  <p>
-    Here, you can write what you would say in a eulogy — but they get to see it now.
-    Click below to visit their page and share your message.
-    You can keep your tribute private or public.
-  </p>
-  <button class="btn primary" type="button" onclick="scrollToAuth()">
-    Create your own page & send invites
-  </button>
-
-      banner.innerHTML = html;
-      banner.style.display = 'block';
-    })();
-
-    // Set footer year
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
-
-  <!-- Your existing app.js (if you still want to use it) -->
   <script src="app.js"></script>
 </body>
 </html>
