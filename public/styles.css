@@ -383,3 +383,19 @@ input:focus {
   margin-top: 2rem;
   text-align: center;
 }
+.book-feature {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.book-feature img.book-thumb {
+  width: 170px; /* or whatever size looks best */
+  display: block;
+  margin: 0 auto;
+}
+
+.book-caption {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #ccc; /* adjust if needed */
+}
