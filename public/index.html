@@ -92,35 +92,44 @@
       </div>
     </section>
 
-    <!-- GOOGLE AD SPACE (placeholder for AdSense) -->
-    <section id="ads" class="section ad-section">
-      <h2>Sponsored</h2>
-      <div id="ad-slot" class="ad-slot" style="min-height:120px; border:1px dashed #aaa; display:flex; align-items:center; justify-content:center;">
-        <p>Ad space reserved. Google AdSense will appear here.</p>
-      </div>
-    </section>
+   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7043536983013836"
+     crossorigin="anonymous"></script>
 
     <!-- Auth section: signup + login wired to backend -->
     <section id="auth" class="section auth-section">
       <div class="auth-card">
         <h2>Create your account</h2>
         <p>Create an account to claim your About Me page.</p>
-        <form id="signup-form" onsubmit="handleRegister(event)">
-          <label>
-            Name
-            <input type="text" id="reg-name" required placeholder="Your name" />
-          </label>
-          <label>
-            Email
-            <input type="email" id="reg-email" required placeholder="you@example.com" />
-          </label>
-          <label>
-            Password
-            <input type="password" id="reg-password" required minlength="6" />
-          </label>
-          <button type="submit" class="btn primary">Create account</button>
-        </form>
-      </div>
+        <form id="signup-form" onsubmit="fakeSignup(event)">
+  <label>
+    Username
+    <input type="text" id="username" required placeholder="your-name" />
+  </label>
+  <label>
+    Email
+    <input type="email" id="email" required placeholder="you@example.com" />
+  </label>
+  <label>
+    Password
+    <input type="password" id="password" required minlength="6" />
+  </label>
+
+  <!-- Consent / waiver -->
+  <label class="consent-row">
+    <input type="checkbox" id="consent" required />
+    <span>
+      I understand that I am responsible for what I write on About Me, and I agree not to post
+      threats, harassment, or illegal content. I will not hold About Me or its creator liable
+      for what I or others choose to share on the site.
+    </span>
+  </label>
+
+  <button type="submit" class="btn primary">Create account</button>
+  <p id="signup-message" class="message small-note">
+    (This consent text is not legal advice; formal Terms of Service will be added later.)
+  </p>
+</form>
+
 
       <div class="auth-card">
         <h2>Already have an account?</h2>
