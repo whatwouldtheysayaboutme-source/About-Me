@@ -275,6 +275,18 @@ input:focus {
   font-size: 1.1rem;
   line-height: 1.5;
 }
+.consent-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.consent-row input[type="checkbox"] {
+  margin-top: 4px;
+}
 
 #invite-banner button {
   margin-top: 15px;
