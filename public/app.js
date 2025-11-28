@@ -143,4 +143,73 @@ if (copyTributeBtn && tributeText) {
 
       if (tributeStatus) {
         tributeStatus.textContent =
-          "Message copied. Paste it into a text, email, or DM to
+          "Message copied. Paste it into a text, email, or DM to share.";
+      }
+    } catch (err) {
+      console.error("Copy tribute failed:", err);
+      if (tributeStatus) {
+        tributeStatus.textContent =
+          "Could not copy automatically. Please copy it manually.";
+      }
+    }
+  });
+}
+
+// ---------------------------
+// REAL SIGNUP – talks to /api/register
+// ---------------------------
+
+const signupForm = document.getElementById("signup-form");
+
+if (signupForm) {
+  signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const nameInput = document.getElementById("username");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const msg = document.getElementById("signup-message");
+
+    const name = nameInput ? nameInput.value.trim() : "";
+    const email = emailInput ? emailInput.value.trim() : "";
+    const password = passwordInput ? passwordInput.value : "";
+
+    if (!name || !email || !password) {
+      if (msg) {
+        msg.textContent = "Please fill in all fields.";
+        msg.style.color = "red";
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        if (msg) {
+          msg.textContent = "Account created! Welcome.";
+          msg.style.color = "lightgreen";
+        }
+
+        // (Later we can redirect to a personal page here.)
+      } else {
+        if (msg) {
+          msg.textContent = data.error || "Signup failed.";
+          msg.style.color = "red";
+        }
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      if (msg) {
+        msg.textContent = "Server error. Please try again later.";
+        msg.style.color = "red";
+      }
+    }
+  });
+}
