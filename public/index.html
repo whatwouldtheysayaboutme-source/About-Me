@@ -4,21 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About Me – Hear It While You're Here</title>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About Me – Hear It While You're Here</title>
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7043536983013836"
           crossorigin="anonymous"></script>
 
-  <!-- Google AdSense (keep this as-is) -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7043536983013836"
-          crossorigin="anonymous"></script>
-
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <header class="site-header">
     <div class="logo">About<span>Me</span></div>
@@ -30,11 +23,11 @@
     </nav>
   </header>
 
-  <!-- INVITE BANNER (shown when ?to=friend&name=... is present) -->
+  <!-- Invite banner -->
   <div id="invite-banner" class="invite-banner" style="display:none;"></div>
 
   <main>
-    <!-- Hero / Vision -->
+    <!-- HERO -->
     <section id="vision" class="hero">
       <div class="hero-text">
         <h1>Hear the best things people would say about you – while you're still here.</h1>
@@ -45,6 +38,7 @@
           Create your page
         </button>
       </div>
+
       <div class="hero-card">
         <h2>Living Eulogy Preview</h2>
         <p class="username">@jane-doe</p>
@@ -65,27 +59,21 @@
       </div>
     </section>
 
-    <!-- How it works -->
+    <!-- HOW IT WORKS -->
     <section id="how-it-works" class="section">
       <h2>How About Me works</h2>
       <div class="steps">
         <div class="step">
           <h3>1. Create your profile</h3>
-          <p>
-            Add a photo, share as much or as little about yourself as you want, and choose your privacy settings.
-          </p>
+          <p>Add a photo, share as much or as little about yourself as you want, and choose your privacy settings.</p>
         </div>
         <div class="step">
           <h3>2. Invite friends &amp; family</h3>
-          <p>
-            Send a private link so the people who know you best can write a “living eulogy” or tribute.
-          </p>
+          <p>Send a private link so the people who know you best can write a “living eulogy” or tribute.</p>
         </div>
         <div class="step">
           <h3>3. Read, save, and share</h3>
-          <p>
-            You decide what’s public or private. Keep messages just for you, or share them so others can comment.
-          </p>
+          <p>You decide what’s public or private. Keep messages just for you, or share them so others can comment.</p>
         </div>
       </div>
 
@@ -99,18 +87,17 @@
       </div>
     </section>
 
-    <!-- SHARE YOUR PAGE (BETA) -->
+    <!-- SHARE YOUR PAGE -->
     <section id="share" class="section share-section">
       <h2>Share your About Me page</h2>
       <p>
-        In this beta, you can generate a personal link to send to friends and family.
-        When they open it, they’ll see an invitation to write a message for you.
+        Generate a personal link to send to friends and family. When they open it, they’ll see an invitation to write a message for you.
       </p>
 
       <div class="share-form">
         <label>
           Your name (as you want it to appear)
-          <input type="text" id="share-name" placeholder="Bobby Britton" />
+          <input type="text" id="share-name" placeholder="Your Name" />
         </label>
 
         <button class="btn primary" id="share-generate">Generate invite link</button>
@@ -123,27 +110,24 @@
       </div>
     </section>
 
-    <!-- WRITE YOUR MESSAGE (for invitees) -->
+    <!-- WRITE YOUR MESSAGE -->
     <section id="write" class="section write-section">
       <h2>Write your message</h2>
-      <p id="write-to-line" class="small-note">
-        If you followed a friend’s link, this is where you can write what they mean to you.
-      </p>
-      <p class="small-note">
-        <strong>Beta note:</strong> Messages aren’t stored yet. After writing, click “Copy message”
-        and paste it into a text, email, or DM so they can read it.
-      </p>
+      <p id="write-to-line" class="small-note">If you followed a friend’s link, this is where you can write what they mean to you.</p>
+
       <textarea id="tribute-text" placeholder="Write what you would say in a eulogy – but while they’re still here."></textarea>
       <button class="btn primary" id="copy-tribute">Copy message</button>
       <p id="tribute-status" class="small-note"></p>
     </section>
 
-    <!-- Simple Auth UI (front-end only for now) -->
+    <!-- AUTHENTICATION -->
     <section id="auth" class="section auth-section">
       <div class="auth-card">
         <h2>Get started</h2>
-        <p>Create an account to claim your About Me page (coming in a future version).</p>
-        <form id="signup-form" onsubmit="event.preventDefault(); alert('In this beta, sign-up is just a preview.');">
+        <p>Create an account to claim your About Me page.</p>
+
+        <!-- REAL SIGNUP FORM (no more fake preview popup) -->
+        <form id="signup-form">
           <label>
             Username
             <input type="text" id="username" required placeholder="your-name" />
@@ -156,10 +140,12 @@
             Password
             <input type="password" id="password" required minlength="6" />
           </label>
+
           <button type="submit" class="btn primary">Create account</button>
           <p id="signup-message" class="message"></p>
         </form>
       </div>
+
       <div class="auth-info">
         <h3>Your data, your call</h3>
         <ul>
@@ -170,29 +156,22 @@
       </div>
     </section>
 
-    <!-- Mental health resources -->
+    <!-- MENTAL HEALTH -->
     <section id="mental-health" class="section support-section">
       <h2>If you’re struggling, you’re not alone.</h2>
-      <p>
-        Reading and writing these messages can bring up big feelings. If you need support right now, these
-        resources are free and confidential:
-      </p>
+      <p>These resources are free and confidential:</p>
       <ul class="resource-list">
-        <li><strong>988 Suicide &amp; Crisis Lifeline</strong> – Call or text <a href="tel:988">988</a>, or chat at <a href="https://988lifeline.org" target="_blank" rel="noreferrer">988lifeline.org</a></li>
-        <li><strong>Veterans Crisis Line</strong> – Call <a href="tel:988">988</a> then press 1, or text <a href="sms:838255">838255</a></li>
-        <li><strong>SAMHSA National Helpline</strong> – 1-800-662-HELP (4357)</li>
-        <li><strong>NAMI HelpLine</strong> – 1-800-950-NAMI (6264) or <a href="mailto:helpline@nami.org">helpline@nami.org</a></li>
-        <li><strong>The Trevor Project (LGBTQ+ youth)</strong> – 1-866-488-7386 or <a href="https://www.thetrevorproject.org/get-help/" target="_blank" rel="noreferrer">online chat &amp; text</a></li>
+        <li><strong>988 Suicide &amp; Crisis Lifeline</strong> – Call/text <a href="tel:988">988</a></li>
+        <li><strong>Veterans Crisis Line</strong> – Call <a href="tel:988">988</a> then press 1</li>
+        <li><strong>SAMHSA National Helpline</strong> – 1-800-662-HELP</li>
+        <li><strong>NAMI HelpLine</strong> – 1-800-950-NAMI</li>
+        <li><strong>The Trevor Project</strong> – 1-866-488-7386</li>
       </ul>
-      <p class="small-note">
-        You’ll also see a simple “Need support?” link on every private profile page that brings you back to this list in a future version.
-      </p>
     </section>
 
-    <!-- AdSense block -->
+    <!-- ADS -->
     <section class="section ads-section">
       <p class="small-note center">Ads help keep About Me free.</p>
-      <!-- TODO: replace data-ad-slot with your real AdSense slot ID -->
       <ins class="adsbygoogle"
            style="display:block"
            data-ad-client="ca-pub-7043536983013836"
@@ -202,27 +181,23 @@
     </section>
   </main>
 
-<footer class="site-footer">
-  <p>
-    About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.
-  </p>
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p>
+      About Me &copy; <span id="year"></span>. Built to help you hear the good things now, not later.
+    </p>
 
-  <p class="small-note">
-    This site has been created for only positive entries. Any demeaning, hateful, or inflammatory rhetoric will be deleted.
-    <br>
-    | A short story for your reading enjoyment:
-
-    <a href="https://draft2digital.com/book/2988647" target="_blank" rel="noreferrer" class="book-link">
-     <img src="Running-in-the-80s-cover_image_view_book.png" alt="Running in the ’80s cover" class="book-thumb">
-
-
-    </a>
-  </p>
-</footer>
-
+    <p class="small-note">
+      This site is intended for positive, respectful messages only.
+      <br>
+      | A short story for your reading enjoyment:
+      <a href="https://draft2digital.com/book/2988647" target="_blank" rel="noreferrer" class="book-link">
+        <img src="Running-in-the-80s-cover_image_view_book.png" alt="Running in the ’80s cover" class="book-thumb">
+      </a>
+    </p>
   </footer>
 
-  <!-- App script + AdSense call -->
+  <!-- App script -->
   <script src="app.js"></script>
   <script>
     (adsbygoogle = window.adsbygoogle || []).push({});
