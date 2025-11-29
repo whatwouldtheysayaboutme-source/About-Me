@@ -429,3 +429,6 @@ input:focus {
   font-weight: 600;
   margin-bottom: 0.3rem;
 }
+em.aboutme {
+  font-style: italic !important;
+}
