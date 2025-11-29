@@ -213,3 +213,6 @@ if (signupForm) {
     }
   });
 }
+em.aboutme {
+  font-style: italic;
+}
