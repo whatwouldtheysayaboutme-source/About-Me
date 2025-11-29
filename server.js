@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -20,7 +21,7 @@ async function connectToMongo() {
   try {
     const client = new MongoClient(MONGODB_URI);
     await client.connect();
-    db = client.db('about-me'); 
+    db = client.db('about-me'); // database name
     console.log('Connected to MongoDB');
   } catch (err) {
     console.error('Mongo connection error:', err);
@@ -59,7 +60,14 @@ app.post('/api/register', async (req, res) => {
       createdAt: new Date(),
     });
 
-    return res.json({ ok: true, userId: result.insertedId });
+    return res.json({
+      ok: true,
+      user: {
+        id: result.insertedId,
+        name: name.trim(),
+        email: normalizedEmail,
+      },
+    });
   } catch (err) {
     console.error('/api/register error:', err);
     return res.status(500).json({ error: 'Server error' });
@@ -94,7 +102,7 @@ app.post('/api/login', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-      }
+      },
     });
   } catch (err) {
     console.error('/api/login error:', err);
