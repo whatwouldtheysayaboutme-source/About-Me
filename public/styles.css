@@ -432,3 +432,14 @@ input:focus {
 em.aboutme {
   font-style: italic !important;
 }
+/* Wider hero text on desktop to prevent orphaned words */
+.hero-text h1 {
+  max-width: 60rem; /* was too narrow before */
+}
+
+@media (min-width: 900px) {
+  .hero-text h1 {
+    font-size: 3rem;    /* slightly smaller so line breaks behave */
+    line-height: 1.15;
+  }
+}
