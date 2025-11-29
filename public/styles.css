@@ -92,8 +92,11 @@ a:hover {
 }
 
 .hero-text h1 {
-  font-size: 2.1rem;
-  margin-bottom: 1rem;
+  font-size: clamp(2.4rem, 3.2vw, 3rem); /* slightly smaller, responsive */
+  line-height: 1.1;
+  max-width: 42rem; /* give it more room so “here” doesn’t drop alone */
+}
+
 }
 
 .hero-text .quote {
