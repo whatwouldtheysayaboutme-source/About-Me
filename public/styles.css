@@ -437,13 +437,14 @@ em.aboutme {
   max-width: 60rem; /* was too narrow before */
 }
 
+/* Make hero heading fit into 3 lines cleanly on desktop */
 @media (min-width: 900px) {
   .hero-text h1 {
-    font-size: 3rem;    /* slightly smaller so line breaks behave */
-    line-height: 1.15;
+    font-size: 2.4rem;    /* reduced size */
+    line-height: 1.15;    /* tighter spacing */
+    max-width: 640px;     /* prevents overly long lines */
   }
 }
-.nowrap {
-  white-space: nowrap;
+
 }
 
