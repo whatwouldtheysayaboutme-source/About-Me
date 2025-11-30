@@ -165,6 +165,45 @@ app.post('/api/tributes', async (req, res) => {
 // ------------------------------------------
 // LIST TRIBUTES
 // ------------------------------------------
+// TRIBUTES: list tributes for the logged-in user
+app.get('/api/my-tributes', async (req, res) => {
+  try {
+    const userId = req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({ ok: false, error: "Missing userId" });
+    }
+
+    const users = db.collection('users');
+    let user;
+
+    try {
+      user = await users.findOne({ _id: new MongoClient.ObjectId(userId) });
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: "Invalid userId" });
+    }
+
+    if (!user) {
+      return res.status(404).json({ ok: false, error: "User not found" });
+    }
+
+    const tributes = db.collection('tributes');
+
+    // tributes addressed to this user by name
+    const results = await tributes
+      .find({ toName: user.name })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray();
+
+    return res.json({ ok: true, tributes: results });
+
+  } catch (err) {
+    console.error("/api/my-tributes error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
+
 app.get('/api/tributes', async (req, res) => {
   try {
     const { to } = req.query;
