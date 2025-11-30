@@ -22,6 +22,7 @@
     <nav>
       <a href="#vision">Vision</a>
       <a href="#how-it-works">How it works</a>
+      <a href="#my-tributes">My tributes</a>
       <a href="#mental-health">Support</a>
       <a href="#auth" class="btn btn-outline">Log in / Sign up</a>
     </nav>
@@ -41,11 +42,11 @@
           <span class="nowrap">still here.</span>
         </h1>
 
-        <p class="quote">
-          “Too often we wait until it's too late to say the things that matter most.
-          We shouldn't need a funeral to speak from the heart. Don't wait for a eulogy.
-          Tell someone what they mean to you today, while they can still hear you.”
-        </p>
+      <p class="quote">
+        “Too often we wait until it's too late to say the things that matter most.
+        We shouldn't need a funeral to speak from the heart. Don't wait for a eulogy.
+        Tell someone what they mean to you today, while they can still hear you.”
+      </p>
 
         <!-- Scroll straight to Step 1 -->
         <button
@@ -132,7 +133,7 @@
           Create an account to claim your <em class="aboutme">About Me</em> page.
         </p>
 
-        <!-- REAL SIGNUP FORM -->
+        <!-- REAL SIGNUP FORM (single instance) -->
         <form id="signup-form">
           <label>
             Username
@@ -144,58 +145,60 @@
             <input type="email" id="email" required placeholder="you@example.com" />
           </label>
 
-          <form id="signup-form">
-  <label>
-    Username
-    <input type="text" id="username" required placeholder="your-name" />
-  </label>
+          <label>
+            Password
+            <input type="password" id="password" required minlength="6" />
+          </label>
 
-  <label>
-    Email
-    <input type="email" id="email" required placeholder="you@example.com" />
-  </label>
+          <button type="submit" class="btn primary">Create account</button>
+          <p id="signup-message" class="message"></p>
+        </form>
 
-  <label>
-    Password
-    <input type="password" id="password" required minlength="6" />
-  </label>
+        <!-- LOGIN FORM -->
+        <div id="login-container" style="margin-top:2rem;">
+          <p class="step-label">Already have an account?</p>
+          <button
+            class="btn btn-outline"
+            onclick="
+              document.getElementById('signup-form').style.display='none';
+              document.getElementById('login-form').style.display='block';
+            "
+          >
+            Log in
+          </button>
 
-  <button type="submit" class="btn primary">Create account</button>
-  <p id="signup-message" class="message"></p>
-</form>  <!-- ✔ FIXED: this closes signup form -->
+          <form id="login-form" style="display:none; margin-top:1rem;">
+            <label>
+              Username or Email
+              <input
+                type="text"
+                id="login-user"
+                required
+                placeholder="your-name or you@example.com"
+              />
+            </label>
 
-<!-- LOGIN FORM -->
-<div id="login-container" style="margin-top:2rem;">
-  <p class="step-label">Already have an account?</p>
-  <button class="btn btn-outline" onclick="
-    document.getElementById('signup-form').style.display='none';
-    document.getElementById('login-form').style.display='block';
-  ">Log in</button>
+            <label>
+              Password
+              <input type="password" id="login-pass" required minlength="6" />
+            </label>
 
-  <form id="login-form" style="display:none; margin-top:1rem;">
-    <label>
-      Username or Email
-      <input type="text" id="login-user" required placeholder="your-name or you@example.com" />
-    </label>
+            <button type="submit" class="btn primary">Log in</button>
+            <p id="login-message" class="message"></p>
 
-    <label>
-      Password
-      <input type="password" id="login-pass" required minlength="6" />
-    </label>
-
-    <button type="submit" class="btn primary">Log in</button>
-    <p id="login-message" class="message"></p>
-
-    <p class="small-note" style="margin-top:0.75rem;">
-      Don’t have an account?
-      <a href="#" onclick="
-        document.getElementById('signup-form').style.display='block';
-        document.getElementById('login-form').style.display='none';
-      ">Create one</a>.
-    </p>
-  </form>
-</div>
-
+            <p class="small-note" style="margin-top:0.75rem;">
+              Don’t have an account?
+              <a
+                href="#"
+                onclick="
+                  document.getElementById('signup-form').style.display='block';
+                  document.getElementById('login-form').style.display='none';
+                "
+              >Create one</a>.
+            </p>
+          </form>
+        </div>
+      </div>
 
       <div class="auth-info">
         <h3>Your data, your call</h3>
@@ -272,27 +275,33 @@
 
       <p id="tribute-status" class="small-note"></p>
     </section>
-<!-- ===========================
-      MY TRIBUTES
-=========================== -->
-<section id="my-tributes" class="section tributes-section">
-  <h2>My tributes</h2>
-  <p class="small-note">
-    These are the messages people have saved for you on <em class="aboutme">About Me</em>.
-  </p>
 
-  <div id="tributes-loading" class="small-note">
-    Loading your tributes…
-  </div>
+    <!-- =========================
+         MY TRIBUTES
+    ========================== -->
+    <section id="my-tributes" class="section tributes-section">
+      <h2>My tributes</h2>
+      <p class="small-note">
+        These are the messages people have saved for you on
+        <em class="aboutme">About Me</em>.
+      </p>
 
-  <div id="tributes-error" class="error-note" style="display:none;">
-    Could not load your tributes. Please try again later.
-  </div>
+      <div id="tributes-loading" class="small-note">
+        Loading your tributes…
+      </div>
 
-  <div id="tributes-list" class="tributes-list">
-    <!-- Tribute cards will be inserted by app.js -->
-  </div>
-</section>
+      <div
+        id="tributes-error"
+        class="error-note"
+        style="display:none;"
+      >
+        Could not load your tributes. Please try again later.
+      </div>
+
+      <div id="tributes-list" class="tributes-list">
+        <!-- Tribute cards inserted by app.js -->
+      </div>
+    </section>
 
     <!-- =========================
          MENTAL HEALTH SUPPORT
