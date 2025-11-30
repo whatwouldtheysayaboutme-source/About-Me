@@ -3,11 +3,9 @@
 // ---------------------------
 
 // Who the message is for (comes from ?to= in the URL)
-let currentInviteName = null;   // <-- NEW (around line 5)
+let currentInviteName = null;
 
 // Set footer year
-const yearSpan = document.getElementById("year");
-
 const yearSpan = document.getElementById("year");
 if (yearSpan) {
   yearSpan.textContent = new Date().getFullYear();
@@ -36,10 +34,8 @@ if (shareGenerateBtn && shareNameInput) {
     }
 
     // Build invite link: same page, with ?to=<name>#write
-    const base =
-      window.location.origin + window.location.pathname;
-    const url =
-      `${base}?to=${encodeURIComponent(name)}#write`;
+    const base = window.location.origin + window.location.pathname;
+    const url = `${base}?to=${encodeURIComponent(name)}#write`;
 
     if (shareUrlInput && shareResult) {
       shareUrlInput.value = url;
@@ -54,8 +50,7 @@ if (shareGenerateBtn && shareNameInput) {
     // Update write section line too
     const writeToLine = document.getElementById("write-to-line");
     if (writeToLine) {
-      writeToLine.textContent =
-        `You’re writing a message for ${name}. Share from the heart.`;
+      writeToLine.textContent = `You’re writing a message for ${name}. Share from the heart.`;
     }
   });
 }
@@ -98,23 +93,21 @@ if (shareCopyBtn && shareUrlInput) {
 
   if (!to) return;
 
-const name = decodeURIComponent(to);
-currentInviteName = name;   // <-- Correct placement
-const inviteBanner = document.getElementById("invite-banner");
-const writeToLine = document.getElementById("write-to-line");
+  const name = decodeURIComponent(to);
+  currentInviteName = name; // store who the tribute is for
+
+  const inviteBanner = document.getElementById("invite-banner");
+  const writeToLine = document.getElementById("write-to-line");
 
   if (inviteBanner) {
     inviteBanner.style.display = "block";
-    inviteBanner.textContent =
-      `You’ve been invited to write a message for ${name}. Scroll down to share what they mean to you.`;
+    inviteBanner.textContent = `You’ve been invited to write a message for ${name}. Scroll down to share what they mean to you.`;
   }
 
   if (writeToLine) {
-    writeToLine.textContent =
-      `You’re writing a message for ${name}. Share from the heart.`;
+    writeToLine.textContent = `You’re writing a message for ${name}. Share from the heart.`;
   }
 
-  // Optionally scroll to the write section
   const writeSection = document.getElementById("write");
   if (writeSection) {
     writeSection.scrollIntoView({ behavior: "smooth" });
@@ -162,6 +155,61 @@ if (copyTributeBtn && tributeText) {
 }
 
 // ---------------------------
+// Save tribute to server
+// ---------------------------
+
+const tributeFromInput = document.getElementById("tribute-from");
+const saveTributeBtn = document.getElementById("save-tribute");
+
+if (saveTributeBtn && tributeText) {
+  saveTributeBtn.addEventListener("click", async () => {
+    const message = tributeText.value.trim();
+    const fromName = tributeFromInput ? tributeFromInput.value.trim() : "";
+
+    if (!message) {
+      if (tributeStatus) {
+        tributeStatus.textContent = "Write a message before saving.";
+      }
+      return;
+    }
+
+    const toName = currentInviteName || null;
+
+    try {
+      const res = await fetch("/api/tributes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toName,
+          fromName,
+          message,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (data && data.ok) {
+        if (tributeStatus) {
+          tributeStatus.textContent = "Message saved on About Me. ❤️";
+        }
+      } else {
+        if (tributeStatus) {
+          tributeStatus.textContent =
+            (data && data.error) ||
+            "Could not save your message. Please try again.";
+        }
+      }
+    } catch (err) {
+      console.error("Save tribute error:", err);
+      if (tributeStatus) {
+        tributeStatus.textContent =
+          "Server error while saving. Please try again later.";
+      }
+    }
+  });
+}
+
+// ---------------------------
 // REAL SIGNUP – talks to /api/register
 // ---------------------------
 
@@ -202,8 +250,6 @@ if (signupForm) {
           msg.textContent = "Account created! Welcome.";
           msg.style.color = "lightgreen";
         }
-
-        // (Later we can redirect to a personal page here.)
       } else {
         if (msg) {
           msg.textContent = data.error || "Signup failed.";
@@ -219,5 +265,3 @@ if (signupForm) {
     }
   });
 }
-
-
