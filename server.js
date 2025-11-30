@@ -177,6 +177,20 @@ async function start() {
   await connectToMongo();
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    app.post("/api/feedback", async (req, res) => {
+  const { email, message } = req.body;
+
+  if (!email || !message) {
+    return res.json({ ok: false, error: "Missing fields" });
+  }
+
+  console.log("Feedback received:", email, message);
+
+  // In the future you can add nodemailer here
+
+  res.json({ ok: true });
+});
+
   });
 }
 
