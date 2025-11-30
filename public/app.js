@@ -461,5 +461,5 @@
         tributesError.style.display = "block";
         tributesError.textContent =
           "Server error while loading tributes. Please try again later.";
-          })();
-  }
+  })();
+}
