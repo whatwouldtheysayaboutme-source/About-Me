@@ -1,16 +1,14 @@
-// Wrap everything so we don't leak globals or double-declare things
+// Wrap everything so we don't leak globals
 (function () {
   // ---------------------------
   // Basic helpers
   // ---------------------------
 
-  // Point all API calls at the Node/Express backend
   const API_BASE = "https://about-me-api-9m4q.onrender.com";
 
-  // Who the message is for (comes from ?to= in the URL)
   let currentInviteName = null;
 
-  // Utility: safe JSON parsing
+  // Safe JSON helper
   async function safeJson(res) {
     try {
       return await res.json();
@@ -19,43 +17,39 @@
     }
   }
 
-  // Utility: set status text + color safely
+  // Status helper
   function setStatus(el, text, color) {
     if (!el) return;
     el.textContent = text;
     if (color) el.style.color = color;
   }
 
-  // Set footer year
+  // Footer year
   const yearSpan = document.getElementById("year");
   if (yearSpan) {
     yearSpan.textContent = new Date().getFullYear();
   }
 
-  // ---------------------------
-  // Auth helpers (localStorage)
-  // ---------------------------
-
+  // Remembered user
   let currentUser = null;
   const storedUser = localStorage.getItem("aboutme_user");
   if (storedUser) {
     try {
       currentUser = JSON.parse(storedUser);
-    } catch {
+    } catch (_) {
       currentUser = null;
     }
   }
 
-  function getToken() {
-    return localStorage.getItem("aboutme_token") || null;
-  }
-
-  // If logged in, update nav button text
   if (currentUser) {
     const authLink = document.querySelector('a[href="#auth"]');
     if (authLink) {
       authLink.textContent = `Hi, ${currentUser.name}`;
     }
+  }
+
+  function getToken() {
+    return localStorage.getItem("aboutme_token") || null;
   }
 
   // ---------------------------
@@ -132,6 +126,7 @@
   (function handleInviteOnLoad() {
     const params = new URLSearchParams(window.location.search);
     const to = params.get("to");
+
     if (!to) return;
 
     const name = decodeURIComponent(to);
@@ -162,8 +157,6 @@
   const tributeText = document.getElementById("tribute-text");
   const copyTributeBtn = document.getElementById("copy-tribute");
   const tributeStatus = document.getElementById("tribute-status");
-  const tributeFromInput = document.getElementById("tribute-from");
-  const saveTributeBtn = document.getElementById("save-tribute");
 
   if (copyTributeBtn && tributeText) {
     copyTributeBtn.addEventListener("click", async () => {
@@ -200,6 +193,9 @@
   // ---------------------------
   // Save tribute to server
   // ---------------------------
+
+  const tributeFromInput = document.getElementById("tribute-from");
+  const saveTributeBtn = document.getElementById("save-tribute");
 
   if (saveTributeBtn && tributeText) {
     saveTributeBtn.addEventListener("click", async () => {
@@ -302,7 +298,11 @@
         }
       } catch (err) {
         console.error("Signup error:", err);
-        setStatus(msg, "Server error. Please try again later.", "salmon");
+        setStatus(
+          msg,
+          "Server error. Please try again later.",
+          "salmon"
+        );
       }
     });
   }
@@ -372,24 +372,23 @@
     });
   }
 
-   // ---------------------------
-  // "My tributes" – shows messages saved for the logged-in user
+  // ---------------------------
+  // "My tributes" – load for logged-in user
   // ---------------------------
 
-  const tributesListEl  = document.getElementById("tributes-list");
+  const tributesListEl = document.getElementById("tributes-list");
   const tributesLoading = document.getElementById("tributes-loading");
-  const tributesError   = document.getElementById("tributes-error");
+  const tributesError = document.getElementById("tributes-error");
 
   if (tributesListEl && tributesLoading && tributesError) {
     (async function loadMyTributes() {
-      // reset UI
       tributesLoading.style.display = "block";
-      tributesLoading.textContent   = "Loading your tributes…";
-      tributesError.style.display   = "none";
-      tributesError.textContent     = "";
-      tributesListEl.innerHTML      = "";
+      tributesLoading.textContent = "Loading your tributes…";
+      tributesError.style.display = "none";
+      tributesError.textContent = "";
+      tributesListEl.innerHTML = "";
 
-      const token = getToken(); // may be null, that’s OK
+      const token = getToken();
 
       try {
         const res = await fetch(`${API_BASE}/api/my-tributes`, {
@@ -398,14 +397,12 @@
             { "Content-Type": "application/json" },
             token ? { Authorization: `Bearer ${token}` } : {}
           ),
-          // if the backend uses cookies for auth, this sends them too
           credentials: "include",
         });
 
         const data = await safeJson(res);
         tributesLoading.style.display = "none";
 
-        // Not authenticated
         if (res.status === 401 || res.status === 403) {
           tributesError.style.display = "block";
           tributesError.textContent =
@@ -458,8 +455,10 @@
       } catch (err) {
         console.error("Load tributes error:", err);
         tributesLoading.style.display = "none";
-        tributesError.style.display   = "block";
+        tributesError.style.display = "block";
         tributesError.textContent =
           "Server error while loading tributes. Please try again later.";
       }
     })();
+  }
+})(); 
