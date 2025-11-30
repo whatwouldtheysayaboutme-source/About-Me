@@ -16,12 +16,14 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 let db;
 
-// CONNECT TO MONGO
+// ------------------------------------------
+// CONNECT TO MONGODB
+// ------------------------------------------
 async function connectToMongo() {
   try {
     const client = new MongoClient(MONGODB_URI);
     await client.connect();
-    db = client.db('about-me'); // database name
+    db = client.db('about-me');
     console.log('Connected to MongoDB');
   } catch (err) {
     console.error('Mongo connection error:', err);
@@ -29,24 +31,29 @@ async function connectToMongo() {
   }
 }
 
+// ------------------------------------------
 // HEALTH CHECK
+// ------------------------------------------
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, message: 'API running' });
 });
 
-// USERS COUNT ROUTE (optional, for your own stats)
+// ------------------------------------------
+// USERS COUNT
+// ------------------------------------------
 app.get('/api/users/count', async (req, res) => {
   try {
     const users = db.collection('users');
     const count = await users.countDocuments();
     return res.json({ ok: true, count });
   } catch (err) {
-    console.error('/api/users/count error:', err);
     return res.status(500).json({ ok: false, error: 'Server error' });
   }
 });
 
-// REGISTER ROUTE
+// ------------------------------------------
+// REGISTER
+// ------------------------------------------
 app.post('/api/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -79,6 +86,7 @@ app.post('/api/register', async (req, res) => {
         name: name.trim(),
         email: normalizedEmail,
       },
+      token: "devtoken-" + result.insertedId // <-- FIXED
     });
   } catch (err) {
     console.error('/api/register error:', err);
@@ -86,7 +94,9 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// LOGIN ROUTE
+// ------------------------------------------
+// LOGIN
+// ------------------------------------------
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -115,6 +125,7 @@ app.post('/api/login', async (req, res) => {
         name: user.name,
         email: user.email,
       },
+      token: "devtoken-" + user._id // <-- FIXED
     });
   } catch (err) {
     console.error('/api/login error:', err);
@@ -122,7 +133,9 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// TRIBUTES: save a new tribute
+// ------------------------------------------
+// SAVE TRIBUTE
+// ------------------------------------------
 app.post('/api/tributes', async (req, res) => {
   try {
     const { toName, fromName, message } = req.body;
@@ -149,7 +162,9 @@ app.post('/api/tributes', async (req, res) => {
   }
 });
 
-// TRIBUTES: list tributes, e.g. /api/tributes?to=Bobby
+// ------------------------------------------
+// LIST TRIBUTES
+// ------------------------------------------
 app.get('/api/tributes', async (req, res) => {
   try {
     const { to } = req.query;
@@ -160,11 +175,7 @@ app.get('/api/tributes', async (req, res) => {
       query.toName = to.trim();
     }
 
-    const items = await tributes
-      .find(query)
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .toArray();
+    const items = await tributes.find(query).sort({ createdAt: -1 }).limit(50).toArray();
 
     return res.json({ ok: true, tributes: items });
   } catch (err) {
@@ -173,11 +184,10 @@ app.get('/api/tributes', async (req, res) => {
   }
 });
 
-async function start() {
-  await connectToMongo();
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    app.post("/api/feedback", async (req, res) => {
+// ------------------------------------------
+// FEEDBACK ENDPOINT (MOVED TO CORRECT LOCATION)
+// ------------------------------------------
+app.post("/api/feedback", async (req, res) => {
   const { email, message } = req.body;
 
   if (!email || !message) {
@@ -186,11 +196,16 @@ async function start() {
 
   console.log("Feedback received:", email, message);
 
-  // In the future you can add nodemailer here
-
-  res.json({ ok: true });
+  return res.json({ ok: true });
 });
 
+// ------------------------------------------
+// START SERVER
+// ------------------------------------------
+async function start() {
+  await connectToMongo();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
 }
 
