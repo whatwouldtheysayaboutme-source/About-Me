@@ -269,3 +269,31 @@ if (signupForm) {
     }
   });
 }
+// LOGIN
+document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const identifier = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identifier, password }),
+  });
+
+  const data = await response.json();
+  const msg = document.getElementById('login-message');
+
+  if (data.ok) {
+    msg.textContent = "Login successful. Redirecting...";
+    msg.style.color = "lightgreen";
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 800);
+  } else {
+    msg.textContent = data.error || "Login failed.";
+    msg.style.color = "salmon";
+  }
+});
