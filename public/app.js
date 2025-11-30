@@ -397,8 +397,7 @@
             { "Content-Type": "application/json" },
             token ? { Authorization: `Bearer ${token}` } : {}
           ),
-          credentials: "include",
-        });
+                  });
 
         const data = await safeJson(res);
         tributesLoading.style.display = "none";
