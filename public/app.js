@@ -391,11 +391,14 @@
       const token = getToken();
 
       try {
-        const res = await fetch(`${API_BASE}/api/my-tributes`, {
-          method: "GET",
-          headers: Object.assign(
-            { "Content-Type": "application/json" },
-            token ? { Authorization: `Bearer ${token}` } : {}
+       const headers = {};
+if (token) {
+  headers.Authorization = `Bearer ${token}`;
+}
+
+const res = await fetch(`${API_BASE}/api/my-tributes`, {
+  method: "GET",
+  headers,
           ),
                   });
 
