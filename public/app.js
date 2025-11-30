@@ -245,6 +245,63 @@ if (signupForm) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
+// ---------------------------
+// LOGIN – talks to /api/login
+// ---------------------------
+
+const loginForm = document.getElementById("login-form");
+
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const userInput = document.getElementById("login-user");
+    const passInput = document.getElementById("login-pass");
+    const msg = document.getElementById("login-message");
+
+    const email = userInput ? userInput.value.trim() : "";
+    const password = passInput ? passInput.value : "";
+
+    if (!email || !password) {
+      if (msg) {
+        msg.textContent = "Please enter your email and password.";
+        msg.style.color = "red";
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }), // server expects "email"
+      });
+
+      const data = await res.json();
+      console.log("Login response:", data); // TEMP: to prove it ran
+
+      if (data.ok) {
+        if (msg) {
+          msg.textContent = `Logged in as ${data.user.name}.`;
+          msg.style.color = "lightgreen";
+        }
+        alert(`Logged in as ${data.user.name}`); // TEMP: super visible
+      } else {
+        if (msg) {
+          msg.textContent = data.error || "Login failed.";
+          msg.style.color = "red";
+        }
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      if (msg) {
+        msg.textContent = "Server error. Please try again.";
+        msg.style.color = "red";
+      }
+    }
+  });
+}
+
 
       const data = await res.json().catch(() => null);
 
