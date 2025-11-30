@@ -118,3 +118,18 @@ async function start() {
 }
 
 start();
+async function showUserCount() {
+  try {
+    const res = await fetch('/api/users/count');
+    const data = await res.json();
+
+    if (data.ok) {
+      console.log('Total users:', data.count);
+      // later: put it into some <span id="user-count"></span>
+    }
+  } catch (err) {
+    console.error('Could not fetch user count:', err);
+  }
+}
+
+showUserCount();
