@@ -414,3 +414,61 @@ em.aboutme {
   margin-bottom: 1.2rem;   /* increases breathing room */
   line-height: 1.2;        /* keeps it tight but readable */
 }
+/* ============================
+   My Tributes Section
+============================ */
+
+.tributes-section {
+  max-width: 900px;
+  margin: 4rem auto;
+  padding: 2rem;
+}
+
+.tributes-section h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+#tributes-loading {
+  color: #9bb6d1;
+  margin: 1rem 0;
+}
+
+#tributes-error {
+  color: #ff6b6b;
+  margin: 1rem 0;
+}
+
+.tributes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+}
+
+.tribute-card {
+  background: #0f1a28;
+  border: 1px solid #1e2d3d;
+  padding: 1.2rem 1.4rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.tribute-card p {
+  margin: 0.4rem 0;
+  line-height: 1.5;
+}
+
+.tribute-card strong {
+  color: #7ec3ff;
+}
+
+.small-note {
+  font-size: 0.9rem;
+  color: #9bb6d1;
+}
+
+.error-note {
+  font-size: 0.9rem;
+  color: #ff7777;
+}
