@@ -311,8 +311,7 @@ if (loginForm) {
         }
 
         // TEMP: make it super obvious it worked
-        alert(`Logged in as ${data.user.name}`);
-
+        
         // Optional: refresh the page so future features can show logged-in state
         // setTimeout(() => window.location.reload(), 800);
       } else {
