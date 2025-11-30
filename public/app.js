@@ -7,9 +7,6 @@ const API_BASE = "https://about-me-api-9m4q.onrender.com";
 // Who the message is for (comes from ?to= in the URL)
 let currentInviteName = null;
 
-// Base URL for the Node/Express API on Render
-const API_BASE = "https://about-me-api-9m4q.onrender.com";
-
 // Set footer year
 const yearSpan = document.getElementById("year");
 if (yearSpan) {
