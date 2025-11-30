@@ -387,3 +387,82 @@
     });
   }
 })();
+// ===========================
+// Load "My tributes" section
+// ===========================
+
+const tributesListEl   = document.getElementById("my-tributes-list");
+const tributesLoading  = document.getElementById("tributes-loading");
+const tributesError    = document.getElementById("tributes-error");
+
+if (tributesListEl && tributesLoading && tributesError) {
+  (async function loadMyTributes() {
+    // show loading state
+    tributesLoading.style.display = "block";
+    tributesLoading.textContent = "Loading your tributes...";
+    tributesError.textContent = "";
+    tributesListEl.innerHTML = "";
+
+    try {
+      const res = await fetch(`${API_BASE}/api/my-tributes`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        // if your backend sets a cookie when you log in, this sends it
+        credentials: "include",
+      });
+
+      const data = await res.json().catch(() => null);
+
+      tributesLoading.style.display = "none";
+
+      if (!data || !data.ok) {
+        tributesError.textContent =
+          (data && data.error) ||
+          "We couldn't load your tributes. Try logging in again.";
+        return;
+      }
+
+      const tributes = data.tributes || [];
+
+      if (tributes.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "small-note";
+        empty.textContent =
+          "You don’t have any tributes yet. Share your About Me link and invite people to write one for you.";
+        tributesListEl.appendChild(empty);
+        return;
+      }
+
+      tributes.forEach((t) => {
+        const card = document.createElement("article");
+        card.className = "tribute-card";
+
+        const fromLine = document.createElement("p");
+        fromLine.innerHTML = `<strong>From:</strong> ${t.fromName || "Someone who cares"}`;
+
+        const msgLine = document.createElement("p");
+        msgLine.textContent = t.message || "";
+
+        const metaLine = document.createElement("p");
+        metaLine.className = "small-note";
+        if (t.createdAt) {
+          const d = new Date(t.createdAt);
+          metaLine.textContent = d.toLocaleString();
+        } else {
+          metaLine.textContent = "";
+        }
+
+        card.appendChild(fromLine);
+        card.appendChild(msgLine);
+        if (metaLine.textContent) card.appendChild(metaLine);
+
+        tributesListEl.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Load tributes error:", err);
+      tributesLoading.style.display = "none";
+      tributesError.textContent =
+        "Server error while loading tributes. Please try again later.";
+    }
+  })();
+}
