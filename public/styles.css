@@ -410,3 +410,7 @@ em.aboutme {
     font-size: 0.8rem;
   }
 }
+.hero-text h1 {
+  margin-bottom: 1.2rem;   /* increases breathing room */
+  line-height: 1.2;        /* keeps it tight but readable */
+}
