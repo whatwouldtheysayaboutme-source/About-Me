@@ -32,15 +32,22 @@
     yearSpan.textContent = new Date().getFullYear();
   }
 
-  // Check if user is already logged in (from previous visit)
+  // ---------------------------
+  // Auth helpers (localStorage)
+  // ---------------------------
+
   let currentUser = null;
   const storedUser = localStorage.getItem("aboutme_user");
   if (storedUser) {
     try {
       currentUser = JSON.parse(storedUser);
-    } catch (_) {
+    } catch {
       currentUser = null;
     }
+  }
+
+  function getToken() {
+    return localStorage.getItem("aboutme_token") || null;
   }
 
   // If logged in, update nav button text
@@ -49,11 +56,6 @@
     if (authLink) {
       authLink.textContent = `Hi, ${currentUser.name}`;
     }
-  }
-
-  // Get auth token (if any)
-  function getToken() {
-    return localStorage.getItem("aboutme_token") || null;
   }
 
   // ---------------------------
@@ -76,7 +78,6 @@
         return;
       }
 
-      // Build invite link: same page, with ?to=<name>#write
       const base = window.location.origin + window.location.pathname;
       const url = `${base}?to=${encodeURIComponent(name)}#write`;
 
@@ -91,7 +92,6 @@
         "lightgreen"
       );
 
-      // Update write section line too
       const writeToLine = document.getElementById("write-to-line");
       if (writeToLine) {
         writeToLine.textContent = `You’re writing a message for ${name}. Share from the heart.`;
@@ -109,7 +109,6 @@
         if (navigator.clipboard && navigator.clipboard.writeText) {
           await navigator.clipboard.writeText(text);
         } else {
-          // Fallback
           shareUrlInput.select();
           document.execCommand("copy");
         }
@@ -133,11 +132,10 @@
   (function handleInviteOnLoad() {
     const params = new URLSearchParams(window.location.search);
     const to = params.get("to");
-
     if (!to) return;
 
     const name = decodeURIComponent(to);
-    currentInviteName = name; // store who the tribute is for
+    currentInviteName = name;
 
     const inviteBanner = document.getElementById("invite-banner");
     const writeToLine = document.getElementById("write-to-line");
@@ -164,6 +162,8 @@
   const tributeText = document.getElementById("tribute-text");
   const copyTributeBtn = document.getElementById("copy-tribute");
   const tributeStatus = document.getElementById("tribute-status");
+  const tributeFromInput = document.getElementById("tribute-from");
+  const saveTributeBtn = document.getElementById("save-tribute");
 
   if (copyTributeBtn && tributeText) {
     copyTributeBtn.addEventListener("click", async () => {
@@ -201,9 +201,6 @@
   // Save tribute to server
   // ---------------------------
 
-  const tributeFromInput = document.getElementById("tribute-from");
-  const saveTributeBtn = document.getElementById("save-tribute");
-
   if (saveTributeBtn && tributeText) {
     saveTributeBtn.addEventListener("click", async () => {
       const message = tributeText.value.trim();
@@ -224,11 +221,7 @@
             { "Content-Type": "application/json" },
             token ? { Authorization: `Bearer ${token}` } : {}
           ),
-          body: JSON.stringify({
-            toName,
-            fromName,
-            message,
-          }),
+          body: JSON.stringify({ toName, fromName, message }),
         });
 
         const data = await safeJson(res);
@@ -260,7 +253,7 @@
   }
 
   // ---------------------------
-  // SIGNUP – talks to /api/register
+  // SIGNUP – /api/register
   // ---------------------------
 
   const signupForm = document.getElementById("signup-form");
@@ -295,11 +288,9 @@
         if (data && data.ok) {
           setStatus(msg, "Account created! Welcome.", "lightgreen");
 
-          // If backend returns user + token on signup, store them
           if (data.user && data.token) {
             localStorage.setItem("aboutme_user", JSON.stringify(data.user));
             localStorage.setItem("aboutme_token", data.token);
-
             setTimeout(() => window.location.reload(), 800);
           }
         } else {
@@ -311,17 +302,13 @@
         }
       } catch (err) {
         console.error("Signup error:", err);
-        setStatus(
-          msg,
-          "Server error. Please try again later.",
-          "salmon"
-        );
+        setStatus(msg, "Server error. Please try again later.", "salmon");
       }
     });
   }
 
   // ---------------------------
-  // LOGIN – talks to /api/login
+  // LOGIN – /api/login
   // ---------------------------
 
   const loginForm = document.getElementById("login-form");
@@ -357,7 +344,6 @@
         console.log("Login response:", data);
 
         if (data && data.ok) {
-          // Store token & user for future visits
           if (data.token) {
             localStorage.setItem("aboutme_token", data.token);
           }
@@ -371,7 +357,6 @@
             "lightgreen"
           );
 
-          // Refresh page so UI (nav text, etc.) updates
           setTimeout(() => window.location.reload(), 800);
         } else {
           setStatus(
@@ -386,36 +371,47 @@
       }
     });
   }
-})();
-// ===========================
-// Load "My tributes" section
-// ===========================
 
-const tributesListEl   = document.getElementById("my-tributes-list");
-const tributesLoading  = document.getElementById("tributes-loading");
-const tributesError    = document.getElementById("tributes-error");
+  // ---------------------------
+  // Load "My tributes" section
+  // ---------------------------
 
-if (tributesListEl && tributesLoading && tributesError) {
-  (async function loadMyTributes() {
-    // show loading state
+  const tributesListEl = document.getElementById("tributes-list");
+  const tributesLoading = document.getElementById("tributes-loading");
+  const tributesError = document.getElementById("tributes-error");
+
+  async function loadMyTributes() {
+    if (!tributesListEl || !tributesLoading || !tributesError) return;
+
     tributesLoading.style.display = "block";
-    tributesLoading.textContent = "Loading your tributes...";
+    tributesLoading.textContent = "Loading your tributes…";
+    tributesError.style.display = "none";
     tributesError.textContent = "";
     tributesListEl.innerHTML = "";
+
+    const token = getToken();
+    if (!token) {
+      tributesLoading.style.display = "none";
+      tributesError.style.display = "block";
+      tributesError.textContent =
+        "Log in to see the tributes people have saved for you.";
+      return;
+    }
 
     try {
       const res = await fetch(`${API_BASE}/api/my-tributes`, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
-        // if your backend sets a cookie when you log in, this sends it
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      const data = await res.json().catch(() => null);
-
+      const data = await safeJson(res);
       tributesLoading.style.display = "none";
 
       if (!data || !data.ok) {
+        tributesError.style.display = "block";
         tributesError.textContent =
           (data && data.error) ||
           "We couldn't load your tributes. Try logging in again.";
@@ -438,7 +434,9 @@ if (tributesListEl && tributesLoading && tributesError) {
         card.className = "tribute-card";
 
         const fromLine = document.createElement("p");
-        fromLine.innerHTML = `<strong>From:</strong> ${t.fromName || "Someone who cares"}`;
+        fromLine.innerHTML = `<strong>From:</strong> ${
+          t.fromName || "Someone who cares"
+        }`;
 
         const msgLine = document.createElement("p");
         msgLine.textContent = t.message || "";
@@ -448,8 +446,6 @@ if (tributesListEl && tributesLoading && tributesError) {
         if (t.createdAt) {
           const d = new Date(t.createdAt);
           metaLine.textContent = d.toLocaleString();
-        } else {
-          metaLine.textContent = "";
         }
 
         card.appendChild(fromLine);
@@ -461,8 +457,14 @@ if (tributesListEl && tributesLoading && tributesError) {
     } catch (err) {
       console.error("Load tributes error:", err);
       tributesLoading.style.display = "none";
+      tributesError.style.display = "block";
       tributesError.textContent =
         "Server error while loading tributes. Please try again later.";
     }
-  })();
-}
+  }
+
+  // Actually load them on page load
+  if (tributesListEl && tributesLoading && tributesError) {
+    loadMyTributes();
+  }
+})();
