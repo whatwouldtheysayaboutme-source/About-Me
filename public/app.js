@@ -373,94 +373,102 @@
   }
 
   // ---------------------------
-  // "My tributes" – load for logged-in user
-  // ---------------------------
+// "My tributes" – load for logged-in user
+// ---------------------------
 
-  const tributesListEl = document.getElementById("tributes-list");
-  const tributesLoading = document.getElementById("tributes-loading");
-  const tributesError = document.getElementById("tributes-error");
+const tributesListEl = document.getElementById("tributes-list");
+const tributesLoading = document.getElementById("tributes-loading");
+const tributesError = document.getElementById("tributes-error");
 
-  if (tributesListEl && tributesLoading && tributesError) {
-    (async function loadMyTributes() {
-      tributesLoading.style.display = "block";
-      tributesLoading.textContent = "Loading your tributes…";
-      tributesError.style.display = "none";
-      tributesError.textContent = "";
-      tributesListEl.innerHTML = "";
+if (tributesListEl && tributesLoading && tributesError) {
+  (async function loadMyTributes() {
+    // initial UI state
+    tributesLoading.style.display = "block";
+    tributesLoading.textContent = "Loading your tributes…";
+    tributesError.style.display = "none";
+    tributesError.textContent = "";
+    tributesListEl.innerHTML = "";
 
-      const token = getToken();
+    const token = getToken();
 
-      try {
-       const headers = {};
-if (token) {
-  headers.Authorization = `Bearer ${token}`;
-}
+    try {
+      // build headers
+      const headers = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
 
-const res = await fetch(`${API_BASE}/api/my-tributes`, {
-  method: "GET",
-  headers,
-          ),
-                  });
+      // call API
+      const res = await fetch(`${API_BASE}/api/my-tributes`, {
+        method: "GET",
+        headers,
+      });
 
-        const data = await safeJson(res);
-        tributesLoading.style.display = "none";
+      const data = await safeJson(res);
+      tributesLoading.style.display = "none";
 
-        if (res.status === 401 || res.status === 403) {
-          tributesError.style.display = "block";
-          tributesError.textContent =
-            "Log in to see the tributes people have saved for you.";
-          return;
-        }
-
-        if (!data || !data.ok) {
-          tributesError.style.display = "block";
-          tributesError.textContent =
-            (data && data.error) ||
-            "We couldn’t load your tributes. Try again later.";
-          return;
-        }
-
-        const tributes = data.tributes || [];
-
-        if (!tributes.length) {
-          const empty = document.createElement("p");
-          empty.className = "small-note";
-          empty.textContent =
-            "You don’t have any tributes yet. Share your About Me link and invite people to write one for you.";
-          tributesListEl.appendChild(empty);
-          return;
-        }
-
-        tributes.forEach((t) => {
-          const card = document.createElement("article");
-          card.className = "tribute-card";
-
-          const fromLine = document.createElement("p");
-          fromLine.innerHTML =
-            `<strong>From:</strong> ${t.fromName || "Someone who cares"}`;
-
-          const msgLine = document.createElement("p");
-          msgLine.textContent = t.message || "";
-
-          const metaLine = document.createElement("p");
-          metaLine.className = "small-note";
-          if (t.createdAt) {
-            metaLine.textContent = new Date(t.createdAt).toLocaleString();
-          }
-
-          card.appendChild(fromLine);
-          card.appendChild(msgLine);
-          if (metaLine.textContent) card.appendChild(metaLine);
-
-          tributesListEl.appendChild(card);
-        });
-      } catch (err) {
-        console.error("Load tributes error:", err);
-        tributesLoading.style.display = "none";
+      // not logged in / forbidden
+      if (res.status === 401 || res.status === 403) {
         tributesError.style.display = "block";
         tributesError.textContent =
-          "Server error while loading tributes. Please try again later.";
+          "Log in to see the tributes people have saved for you.";
+        return;
       }
-    })();
+
+      // API error or bad response
+      if (!data || !data.ok) {
+        tributesError.style.display = "block";
+        tributesError.textContent =
+          (data && data.error) ||
+          "We couldn’t load your tributes. Try again later.";
+        return;
+      }
+
+      const tributes = data.tributes || [];
+
+      // no tributes yet
+      if (!tributes.length) {
+        const empty = document.createElement("p");
+        empty.className = "small-note";
+        empty.textContent =
+          "You don’t have any tributes yet. Share your About Me link and invite people to write one for you.";
+        tributesListEl.appendChild(empty);
+        return;
+      }
+
+      // render tributes
+      tributes.forEach((t) => {
+        const card = document.createElement("article");
+        card.className = "tribute-card";
+
+        const fromLine = document.createElement("p");
+        fromLine.innerHTML =
+          `<strong>From:</strong> ${t.fromName || "Someone who cares"}`;
+
+        const msgLine = document.createElement("p");
+        msgLine.textContent = t.message || "";
+
+        const metaLine = document.createElement("p");
+        metaLine.className = "small-note";
+        if (t.createdAt) {
+          metaLine.textContent = new Date(t.createdAt).toLocaleString();
+        }
+
+        card.appendChild(fromLine);
+        card.appendChild(msgLine);
+        if (metaLine.textContent) card.appendChild(metaLine);
+
+        tributesListEl.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Load tributes error:", err);
+      tributesLoading.style.display = "none";
+      tributesError.style.display = "block";
+      tributesError.textContent =
+        "Server error while loading tributes. Please try again later.";
+    }
+  })();
+}
+
   }
 })(); 
