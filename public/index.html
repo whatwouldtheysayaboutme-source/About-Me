@@ -38,7 +38,8 @@
         <p class="quote">
           “Too often we wait until it's too late to say the things that matter most. We shouldn't need a funeral to speak from the heart. Don't wait for a eulogy. Tell someone what they mean to you today, while they can still hear you.”
         </p>
-        <button class="btn primary" onclick="document.querySelector('#share').scrollIntoView({behavior:'smooth'})">
+<button class="btn primary" onclick="document.querySelector('#auth').scrollIntoView({behavior:'smooth'})">
+
           Create your page
         </button>
       </div>
@@ -100,7 +101,33 @@
   </div>
 </section>
 
+  <section id="auth" class="section auth-section">
+  <div class="auth-card">
+    <p class="step-label">Step 1 – Create your profile</p>
+    <h2>Get started</h2>
+    <p>Create an account to claim your <em class="aboutme">About Me</em> page.</p>
+    <!-- existing form stays the same -->
 
+
+        <!-- REAL SIGNUP FORM (no more fake preview popup) -->
+        <form id="signup-form">
+          <label>
+            Username
+            <input type="text" id="username" required placeholder="your-name" />
+          </label>
+          <label>
+            Email
+            <input type="email" id="email" required placeholder="you@example.com" />
+          </label>
+          <label>
+            Password
+            <input type="password" id="password" required minlength="6" />
+          </label>
+
+          <button type="submit" class="btn primary">Create account</button>
+          <p id="signup-message" class="message"></p>
+        </form>
+      </div>
     <!-- SHARE YOUR PAGE -->
  <section id="share" class="section share-section">
   <p class="step-label">Step 2 – Invite friends &amp; family</p>
@@ -129,70 +156,94 @@
     </section>
 
     <!-- WRITE YOUR MESSAGE -->
- <section id="write" class="section write-section">
-  <p class="step-label">Step 3 – Read, save, and share</p>
-  <h2>Write your message</h2>
-  <p id="write-to-line" class="small-note">
-    If you followed a friend’s link, this is where you can write what they mean to you.
-  </p>
+  <section id="auth" class="section auth-section">
+    <div class="auth-card">
+      <p class="step-label">Step 1 – Create your profile</p>
+      <h2>Get started</h2>
+      <p>Create an account to claim your <em class="aboutme">About Me</em> page.</p>
 
-  <!-- NEW: Who is writing the tribute -->
-  <label class="small-note" style="display:block; margin-top:0.75rem; margin-bottom:0.25rem;">
-    Your name (optional)
-    <input type="text" id="tribute-from" placeholder="How you want your name to appear" />
-  </label>
+      <!-- REAL SIGNUP FORM (no more fake preview popup) -->
+      <form id="signup-form">
+        <label>
+          Username
+          <input type="text" id="username" required placeholder="your-name" />
+        </label>
+        <label>
+          Email
+          <input type="email" id="email" required placeholder="you@example.com" />
+        </label>
+        <label>
+          Password
+          <input type="password" id="password" required minlength="6" />
+        </label>
 
-  <textarea
-    id="tribute-text"
-    placeholder="Write what you would say in a eulogy – but while they’re still here."
-  ></textarea>
+        <button type="submit" class="btn primary">Create account</button>
+        <p id="signup-message" class="message"></p>
+      </form>
+    </div>
 
-  <div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
-    <button class="btn primary" id="save-tribute">Save on About Me</button>
-    <button class="btn btn-outline" id="copy-tribute">Copy message</button>
-  </div>
+    <div class="auth-info">
+      <h3>Your data, your call</h3>
+      <ul>
+        <li>We never sell your tributes.</li>
+        <li>You control who can post on your page.</li>
+        <li>Delete posts or your whole account any time.</li>
+      </ul>
+    </div>
+  </section>
 
-  <p id="tribute-status" class="small-note"></p>
-</section>
+  <!-- SHARE YOUR PAGE -->
+  <section id="share" class="section share-section">
+    <p class="step-label">Step 2 – Invite friends &amp; family</p>
+    <h2>Share your <em class="aboutme">About Me</em> page</h2>
+    <p>
+      Generate a personal link to send to friends and family.
+      When they open it, they’ll see an invitation to write a message for you.
+    </p>
 
-       <!-- AUTHENTICATION -->
-   <section id="auth" class="section auth-section">
-  <div class="auth-card">
-    <p class="step-label">Step 1 – Create your profile</p>
-    <h2>Get started</h2>
-    <p>Create an account to claim your <em class="aboutme">About Me</em> page.</p>
-    <!-- existing form stays the same -->
+    <div class="share-form">
+      <label>
+        Your name (as you want it to appear)
+        <input type="text" id="share-name" placeholder="Your Name" />
+      </label>
 
+      <button class="btn primary" id="share-generate">Generate invite link</button>
 
-        <!-- REAL SIGNUP FORM (no more fake preview popup) -->
-        <form id="signup-form">
-          <label>
-            Username
-            <input type="text" id="username" required placeholder="your-name" />
-          </label>
-          <label>
-            Email
-            <input type="email" id="email" required placeholder="you@example.com" />
-          </label>
-          <label>
-            Password
-            <input type="password" id="password" required minlength="6" />
-          </label>
-
-          <button type="submit" class="btn primary">Create account</button>
-          <p id="signup-message" class="message"></p>
-        </form>
+      <div id="share-result" class="share-result" style="display:none;">
+        <input type="text" id="share-url" readonly />
+        <button class="btn btn-outline" id="share-copy">Copy link</button>
       </div>
+      <p id="share-status" class="small-note"></p>
+    </div>
+  </section>
 
-      <div class="auth-info">
-        <h3>Your data, your call</h3>
-        <ul>
-          <li>We never sell your tributes.</li>
-          <li>You control who can post on your page.</li>
-          <li>Delete posts or your whole account any time.</li>
-        </ul>
-      </div>
-    </section>
+  <!-- WRITE YOUR MESSAGE -->
+  <section id="write" class="section write-section">
+    <p class="step-label">Step 3 – Read, save, and share</p>
+    <h2>Write your message</h2>
+    <p id="write-to-line" class="small-note">
+      If you followed a friend’s link, this is where you can write what they mean to you.
+    </p>
+
+    <!-- NEW: Who is writing the tribute -->
+    <label class="small-note" style="display:block; margin-top:0.75rem; margin-bottom:0.25rem;">
+      Your name (optional)
+      <input type="text" id="tribute-from" placeholder="How you want your name to appear" />
+    </label>
+
+    <textarea
+      id="tribute-text"
+      placeholder="Write what you would say in a eulogy – but while they’re still here."
+    ></textarea>
+
+    <div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <button class="btn primary" id="save-tribute">Save on About Me</button>
+      <button class="btn btn-outline" id="copy-tribute">Copy message</button>
+    </div>
+
+    <p id="tribute-status" class="small-note"></p>
+  </section>
+
 
     <!-- MENTAL HEALTH -->
     <section id="mental-health" class="section support-section">
