@@ -2,7 +2,12 @@
 // Basic helpers
 // ---------------------------
 
+// Who the message is for (comes from ?to= in the URL)
+let currentInviteName = null;   // <-- NEW (around line 5)
+
 // Set footer year
+const yearSpan = document.getElementById("year");
+
 const yearSpan = document.getElementById("year");
 if (yearSpan) {
   yearSpan.textContent = new Date().getFullYear();
@@ -93,9 +98,10 @@ if (shareCopyBtn && shareUrlInput) {
 
   if (!to) return;
 
-  const name = decodeURIComponent(to);
-  const inviteBanner = document.getElementById("invite-banner");
-  const writeToLine = document.getElementById("write-to-line");
+const name = decodeURIComponent(to);
+currentInviteName = name;   // <-- Correct placement
+const inviteBanner = document.getElementById("invite-banner");
+const writeToLine = document.getElementById("write-to-line");
 
   if (inviteBanner) {
     inviteBanner.style.display = "block";
