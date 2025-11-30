@@ -389,28 +389,29 @@
       tributesError.textContent     = "";
       tributesListEl.innerHTML      = "";
 
-      const token = getToken();
-
-      // Not logged in -> show message
-      if (!token) {
-        tributesLoading.style.display = "none";
-        tributesError.style.display   = "block";
-        tributesError.textContent =
-          "Log in to see the tributes people have saved for you.";
-        return;
-      }
+      const token = getToken(); // may be null, that’s OK
 
       try {
         const res = await fetch(`${API_BASE}/api/my-tributes`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: Object.assign(
+            { "Content-Type": "application/json" },
+            token ? { Authorization: `Bearer ${token}` } : {}
+          ),
+          // if the backend uses cookies for auth, this sends them too
+          credentials: "include",
         });
 
         const data = await safeJson(res);
         tributesLoading.style.display = "none";
+
+        // Not authenticated
+        if (res.status === 401 || res.status === 403) {
+          tributesError.style.display = "block";
+          tributesError.textContent =
+            "Log in to see the tributes people have saved for you.";
+          return;
+        }
 
         if (!data || !data.ok) {
           tributesError.style.display = "block";
@@ -462,6 +463,3 @@
           "Server error while loading tributes. Please try again later.";
       }
     })();
-  }
-
-})();
