@@ -311,7 +311,7 @@
       const token = getToken();
 
       try {
-        const res = await fetch(`${API_BASE}/api/my-tributes`, {
+        const res = await fetch(`${API_BASE}/api/tributes?to=${encodeURIComponent(currentUser?.name || "")}`, {
           method: "GET",
           headers: token
             ? { Authorization: `Bearer ${token}` }
