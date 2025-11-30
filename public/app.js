@@ -1,6 +1,8 @@
 // ---------------------------
 // Basic helpers
 // ---------------------------
+// Point all API calls at the Node/Express backend
+const API_BASE = "https://about-me-api-9m4q.onrender.com";
 
 // Who the message is for (comes from ?to= in the URL)
 let currentInviteName = null;
