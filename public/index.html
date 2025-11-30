@@ -6,13 +6,17 @@
   <title>About Me – Hear It While You're Here</title>
 
   <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7043536983013836"
-          crossorigin="anonymous"></script>
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7043536983013836"
+    crossorigin="anonymous"
+  ></script>
 
   <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
+  <!-- HEADER -->
   <header class="site-header">
     <div class="logo">About<span>Me</span></div>
     <nav>
@@ -23,23 +27,31 @@
     </nav>
   </header>
 
-  <!-- Invite banner -->
+  <!-- Invite banner (shown when someone arrives via ?to=...) -->
   <div id="invite-banner" class="invite-banner" style="display:none;"></div>
 
   <main>
-    <!-- HERO -->
+    <!-- =========================
+         HERO
+    ========================== -->
     <section id="vision" class="hero">
       <div class="hero-text">
         <h1>
-          Hear the best things people would say about you – while you're 
-  <span class="nowrap">still here.</span>
-</h1>
+          Hear the best things people would say about you – while you're
+          <span class="nowrap">still here.</span>
+        </h1>
 
         <p class="quote">
-          “Too often we wait until it's too late to say the things that matter most. We shouldn't need a funeral to speak from the heart. Don't wait for a eulogy. Tell someone what they mean to you today, while they can still hear you.”
+          “Too often we wait until it's too late to say the things that matter most.
+          We shouldn't need a funeral to speak from the heart. Don't wait for a eulogy.
+          Tell someone what they mean to you today, while they can still hear you.”
         </p>
-<button class="btn primary" onclick="document.querySelector('#auth').scrollIntoView({behavior:'smooth'})">
 
+        <!-- Scroll straight to Step 1 -->
+        <button
+          class="btn primary"
+          onclick="document.querySelector('#auth').scrollIntoView({ behavior: 'smooth' })"
+        >
           Create your page
         </button>
       </div>
@@ -47,78 +59,91 @@
       <div class="hero-card">
         <h2>Living Eulogy Preview</h2>
         <p class="username">@jane-doe</p>
+
         <div class="eulogy-card">
           <p><strong>From:</strong> Dad</p>
           <p>
-            I’m proud of the woman you’ve become. Your kindness, grit, and ridiculous laugh have carried this
-            family more times than you know.
+            I’m proud of the woman you’ve become. Your kindness, grit, and ridiculous
+            laugh have carried this family more times than you know.
           </p>
         </div>
+
         <div class="eulogy-card">
           <p><strong>From:</strong> Your best friend, Maya</p>
           <p>
-            You were the first person who ever told me I mattered. I hope this page reminds you
-            how much you matter to all of us.
+            You were the first person who ever told me I mattered.
+            I hope this page reminds you how much you matter to all of us.
           </p>
         </div>
       </div>
     </section>
 
-  <section id="how-it-works" class="section">
-  <h2>How <em class="aboutme">About Me</em> works</h2>
-  <div class="steps">
-    <div class="step">
-      <h3>1. Create your profile</h3>
-      <p>
-        Add a photo, share as much or as little about yourself as you want,
-        and choose your privacy settings.
-      </p>
-    </div>
-    <div class="step">
-      <h3>2. Invite friends &amp; family</h3>
-      <p>
-        Send a private link so the people who know you best can write a
-        “living eulogy” or tribute.
-      </p>
-    </div>
-    <div class="step">
-      <h3>3. Read, save, and share</h3>
-      <p>
-        You decide what’s public or private. Keep messages just for you,
-        or share them so others can comment.
-      </p>
-    </div>
-  </div>
+    <!-- =========================
+         HOW IT WORKS
+    ========================== -->
+    <section id="how-it-works" class="section">
+      <h2>How <em class="aboutme">About Me</em> works</h2>
 
-  <!-- NEW: Privacy card styled like a step -->
-  <div class="privacy-card">
-    <h3>Privacy &amp; control</h3>
-    <ul>
-      <li>Block or delete invitees at any time.</li>
-      <li>Mark each tribute as private or public.</li>
-      <li>Enable or disable comments on public posts.</li>
-    </ul>
-  </div>
-</section>
+      <div class="steps">
+        <div class="step">
+          <h3>1. Create your profile</h3>
+          <p>
+            Add a photo, share as much or as little about yourself as you want,
+            and choose your privacy settings.
+          </p>
+        </div>
 
-  <section id="auth" class="section auth-section">
-  <div class="auth-card">
-    <p class="step-label">Step 1 – Create your profile</p>
-    <h2>Get started</h2>
-    <p>Create an account to claim your <em class="aboutme">About Me</em> page.</p>
-    <!-- existing form stays the same -->
+        <div class="step">
+          <h3>2. Invite friends &amp; family</h3>
+          <p>
+            Send a private link to the people who know you best so they can write a
+            “living eulogy” or tribute.
+          </p>
+        </div>
 
+        <div class="step">
+          <h3>3. Read, save, and share</h3>
+          <p>
+            You decide what’s public or private. Keep messages just for you,
+            or share them so others can comment.
+          </p>
+        </div>
+      </div>
 
-        <!-- REAL SIGNUP FORM (no more fake preview popup) -->
+      <!-- Privacy card inline with the steps -->
+      <div class="privacy-card">
+        <h3>Privacy &amp; control</h3>
+        <ul>
+          <li>Block or delete invitees at any time.</li>
+          <li>Mark each tribute as private or public.</li>
+          <li>Enable or disable comments on public posts.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- =========================
+         STEP 1 – AUTH / SIGNUP
+    ========================== -->
+    <section id="auth" class="section auth-section">
+      <div class="auth-card">
+        <p class="step-label">Step 1 – Create your profile</p>
+        <h2>Get started</h2>
+        <p>
+          Create an account to claim your <em class="aboutme">About Me</em> page.
+        </p>
+
+        <!-- REAL SIGNUP FORM -->
         <form id="signup-form">
           <label>
             Username
             <input type="text" id="username" required placeholder="your-name" />
           </label>
+
           <label>
             Email
             <input type="email" id="email" required placeholder="you@example.com" />
           </label>
+
           <label>
             Password
             <input type="password" id="password" required minlength="6" />
@@ -128,16 +153,28 @@
           <p id="signup-message" class="message"></p>
         </form>
       </div>
-    <!-- SHARE YOUR PAGE -->
- <section id="share" class="section share-section">
-  <p class="step-label">Step 2 – Invite friends &amp; family</p>
-  <h2>Share your <em class="aboutme">About Me</em> page</h2>
-  <p>
-    Generate a personal link to send to friends and family.
-    When they open it, they’ll see an invitation to write a message for you.
-  </p>
-  <!-- rest of share form stays the same -->
 
+      <div class="auth-info">
+        <h3>Your data, your call</h3>
+        <ul>
+          <li>We never sell your tributes.</li>
+          <li>You control who can post on your page.</li>
+          <li>Delete posts or your whole account any time.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- =========================
+         STEP 2 – SHARE YOUR PAGE
+    ========================== -->
+    <section id="share" class="section share-section">
+      <p class="step-label">Step 2 – Invite friends &amp; family</p>
+      <h2>Share your <em class="aboutme">About Me</em> page</h2>
+
+      <p>
+        Generate a personal link to send to friends and family.
+        When they open it, they’ll see an invitation to write a message for you.
+      </p>
 
       <div class="share-form">
         <label>
@@ -151,145 +188,125 @@
           <input type="text" id="share-url" readonly />
           <button class="btn btn-outline" id="share-copy">Copy link</button>
         </div>
+
         <p id="share-status" class="small-note"></p>
       </div>
     </section>
 
-    <!-- WRITE YOUR MESSAGE -->
-  <section id="auth" class="section auth-section">
-    <div class="auth-card">
-      <p class="step-label">Step 1 – Create your profile</p>
-      <h2>Get started</h2>
-      <p>Create an account to claim your <em class="aboutme">About Me</em> page.</p>
+    <!-- =========================
+         STEP 3 – WRITE / SAVE MESSAGE
+    ========================== -->
+    <section id="write" class="section write-section">
+      <p class="step-label">Step 3 – Read, save, and share</p>
+      <h2>Write your message</h2>
 
-      <!-- REAL SIGNUP FORM (no more fake preview popup) -->
-      <form id="signup-form">
-        <label>
-          Username
-          <input type="text" id="username" required placeholder="your-name" />
-        </label>
-        <label>
-          Email
-          <input type="email" id="email" required placeholder="you@example.com" />
-        </label>
-        <label>
-          Password
-          <input type="password" id="password" required minlength="6" />
-        </label>
+      <p id="write-to-line" class="small-note">
+        If you followed a friend’s link, this is where you can write what they mean to you.
+      </p>
 
-        <button type="submit" class="btn primary">Create account</button>
-        <p id="signup-message" class="message"></p>
-      </form>
-    </div>
-
-    <div class="auth-info">
-      <h3>Your data, your call</h3>
-      <ul>
-        <li>We never sell your tributes.</li>
-        <li>You control who can post on your page.</li>
-        <li>Delete posts or your whole account any time.</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- SHARE YOUR PAGE -->
-  <section id="share" class="section share-section">
-    <p class="step-label">Step 2 – Invite friends &amp; family</p>
-    <h2>Share your <em class="aboutme">About Me</em> page</h2>
-    <p>
-      Generate a personal link to send to friends and family.
-      When they open it, they’ll see an invitation to write a message for you.
-    </p>
-
-    <div class="share-form">
-      <label>
-        Your name (as you want it to appear)
-        <input type="text" id="share-name" placeholder="Your Name" />
+      <!-- Who is writing the tribute -->
+      <label
+        class="small-note"
+        style="display:block; margin-top:0.75rem; margin-bottom:0.25rem;"
+      >
+        Your name (optional)
+        <input
+          type="text"
+          id="tribute-from"
+          placeholder="How you want your name to appear"
+        />
       </label>
 
-      <button class="btn primary" id="share-generate">Generate invite link</button>
+      <textarea
+        id="tribute-text"
+        placeholder="Write what you would say in a eulogy – but while they’re still here."
+      ></textarea>
 
-      <div id="share-result" class="share-result" style="display:none;">
-        <input type="text" id="share-url" readonly />
-        <button class="btn btn-outline" id="share-copy">Copy link</button>
+      <div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button class="btn primary" id="save-tribute">Save on About Me</button>
+        <button class="btn btn-outline" id="copy-tribute">Copy message</button>
       </div>
-      <p id="share-status" class="small-note"></p>
-    </div>
-  </section>
 
-  <!-- WRITE YOUR MESSAGE -->
-  <section id="write" class="section write-section">
-    <p class="step-label">Step 3 – Read, save, and share</p>
-    <h2>Write your message</h2>
-    <p id="write-to-line" class="small-note">
-      If you followed a friend’s link, this is where you can write what they mean to you.
-    </p>
+      <p id="tribute-status" class="small-note"></p>
+    </section>
 
-    <!-- NEW: Who is writing the tribute -->
-    <label class="small-note" style="display:block; margin-top:0.75rem; margin-bottom:0.25rem;">
-      Your name (optional)
-      <input type="text" id="tribute-from" placeholder="How you want your name to appear" />
-    </label>
-
-    <textarea
-      id="tribute-text"
-      placeholder="Write what you would say in a eulogy – but while they’re still here."
-    ></textarea>
-
-    <div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
-      <button class="btn primary" id="save-tribute">Save on About Me</button>
-      <button class="btn btn-outline" id="copy-tribute">Copy message</button>
-    </div>
-
-    <p id="tribute-status" class="small-note"></p>
-  </section>
-
-
-    <!-- MENTAL HEALTH -->
+    <!-- =========================
+         MENTAL HEALTH SUPPORT
+    ========================== -->
     <section id="mental-health" class="section support-section">
       <h2>If you’re struggling, you’re not alone.</h2>
       <p>These resources are free and confidential:</p>
+
       <ul class="resource-list">
-        <li><strong>988 Suicide &amp; Crisis Lifeline</strong> – Call/text <a href="tel:988">988</a></li>
-        <li><strong>Veterans Crisis Line</strong> – Call <a href="tel:988">988</a> then press 1</li>
-        <li><strong>SAMHSA National Helpline</strong> – 1-800-662-HELP</li>
-        <li><strong>NAMI HelpLine</strong> – 1-800-950-NAMI</li>
-        <li><strong>The Trevor Project</strong> – 1-866-488-7386</li>
+        <li>
+          <strong>988 Suicide &amp; Crisis Lifeline</strong> – Call/text
+          <a href="tel:988">988</a>
+        </li>
+        <li>
+          <strong>Veterans Crisis Line</strong> – Call
+          <a href="tel:988">988</a> then press 1
+        </li>
+        <li>
+          <strong>SAMHSA National Helpline</strong> – 1-800-662-HELP
+        </li>
+        <li>
+          <strong>NAMI HelpLine</strong> – 1-800-950-NAMI
+        </li>
+        <li>
+          <strong>The Trevor Project</strong> – 1-866-488-7386
+        </li>
       </ul>
     </section>
 
-    <!-- ADS -->
+    <!-- =========================
+         ADS
+    ========================== -->
     <section class="section ads-section">
-      <p class="small-note center">Ads help keep <em class="aboutme">About Me</em> free.</p>
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-7043536983013836"
-           data-ad-slot="0000000000"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
+      <p class="small-note center">
+        Ads help keep <em class="aboutme">About Me</em> free.
+      </p>
+      <ins
+        class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-7043536983013836"
+        data-ad-slot="0000000000"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      ></ins>
     </section>
   </main>
 
- <footer class="site-footer">
-  <p>
-    <em class="aboutme">About Me</em> &copy; <span id="year"></span>. Built to help you hear the good things now, not later.
-  </p>
-
-  <p class="small-note">
-    This site is intended for positive, respectful messages only.
-  </p>
-
-  <div class="book-feature">
-    <a href="https://draft2digital.com/book/2988647" target="_blank" rel="noreferrer">
-      <img src="Running-in-the-80s-cover_image_view_book.png" alt="Running in the ’80s cover" class="book-thumb">
-    </a>
-
-    <p class="book-caption">
-      A short story for your reading enjoyment.
+  <!-- =========================
+       FOOTER
+  ========================== -->
+  <footer class="site-footer">
+    <p>
+      <em class="aboutme">About Me</em> &copy;
+      <span id="year"></span>. Built to help you hear the good things now, not later.
     </p>
-  </div>
-</footer>
 
+    <p class="small-note">
+      This site is intended for positive, respectful messages only.
+    </p>
+
+    <div class="book-feature">
+      <a
+        href="https://draft2digital.com/book/2988647"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <img
+          src="Running-in-the-80s-cover_image_view_book.png"
+          alt="Running in the ’80s cover"
+          class="book-thumb"
+        />
+      </a>
+
+      <p class="book-caption">
+        A short story for your reading enjoyment.
+      </p>
+    </div>
+  </footer>
 
   <!-- App script -->
   <script src="app.js"></script>
