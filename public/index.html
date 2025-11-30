@@ -144,15 +144,58 @@
             <input type="email" id="email" required placeholder="you@example.com" />
           </label>
 
-          <label>
-            Password
-            <input type="password" id="password" required minlength="6" />
-          </label>
+          <form id="signup-form">
+  <label>
+    Username
+    <input type="text" id="username" required placeholder="your-name" />
+  </label>
 
-          <button type="submit" class="btn primary">Create account</button>
-          <p id="signup-message" class="message"></p>
-        </form>
-      </div>
+  <label>
+    Email
+    <input type="email" id="email" required placeholder="you@example.com" />
+  </label>
+
+  <label>
+    Password
+    <input type="password" id="password" required minlength="6" />
+  </label>
+
+  <button type="submit" class="btn primary">Create account</button>
+  <p id="signup-message" class="message"></p>
+</form>  <!-- ✔ FIXED: this closes signup form -->
+
+<!-- LOGIN FORM -->
+<div id="login-container" style="margin-top:2rem;">
+  <p class="step-label">Already have an account?</p>
+  <button class="btn btn-outline" onclick="
+    document.getElementById('signup-form').style.display='none';
+    document.getElementById('login-form').style.display='block';
+  ">Log in</button>
+
+  <form id="login-form" style="display:none; margin-top:1rem;">
+    <label>
+      Username or Email
+      <input type="text" id="login-user" required placeholder="your-name or you@example.com" />
+    </label>
+
+    <label>
+      Password
+      <input type="password" id="login-pass" required minlength="6" />
+    </label>
+
+    <button type="submit" class="btn primary">Log in</button>
+    <p id="login-message" class="message"></p>
+
+    <p class="small-note" style="margin-top:0.75rem;">
+      Don’t have an account?
+      <a href="#" onclick="
+        document.getElementById('signup-form').style.display='block';
+        document.getElementById('login-form').style.display='none';
+      ">Create one</a>.
+    </p>
+  </form>
+</div>
+
 
       <div class="auth-info">
         <h3>Your data, your call</h3>
