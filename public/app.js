@@ -378,6 +378,45 @@
       }
     })();
   }
+const fbEmail = document.getElementById("fb-email");
+const fbMessage = document.getElementById("fb-message");
+const fbSend = document.getElementById("fb-send");
+const fbStatus = document.getElementById("fb-status");
+
+if (fbSend) {
+  fbSend.addEventListener("click", async () => {
+    const email = fbEmail.value.trim();
+    const message = fbMessage.value.trim();
+
+    if (!message) {
+      fbStatus.textContent = "Please enter a message.";
+      fbStatus.style.color = "salmon";
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, message })
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        fbStatus.textContent = "Thanks for your feedback!";
+        fbStatus.style.color = "lightgreen";
+        fbMessage.value = "";
+      } else {
+        fbStatus.textContent = data.error || "Error sending feedback.";
+        fbStatus.style.color = "salmon";
+      }
+    } catch (err) {
+      fbStatus.textContent = "Server error. Try again later.";
+      fbStatus.style.color = "salmon";
+    }
+  });
+}
 
   // ---------------------------------------
   // FEEDBACK FORM (Option 3)
