@@ -373,10 +373,6 @@
   }
 
   // ---------------------------
-// "My tributes" – load for logged-in user
-// ---------------------------
-
-  // ---------------------------
   // "My tributes" – load for logged-in user
   // ---------------------------
 
@@ -450,16 +446,13 @@
           }
 
           card.appendChild(fromLine);
-          card.appendChild(msgLine);
-          if (metaLine.textContent) card.appendChild(metaLine);
-
-          tributesListEl.appendChild(card);
-        });
-      } catch (err) {
+               } catch (err) {
         console.error("Load tributes error:", err);
         tributesLoading.style.display = "none";
         tributesError.style.display = "block";
         tributesError.textContent =
           "Server error while loading tributes. Please try again later.";
-  })();
-}
+      }
+    })();
+  }
+})();
