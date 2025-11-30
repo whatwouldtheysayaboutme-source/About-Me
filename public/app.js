@@ -376,7 +376,7 @@
   // Load "My tributes" section
   // ---------------------------
 
-  const tributesListEl = document.getElementById("tributes-list");
+  const tributesListEl   = document.getElementById("tributes-list");
   const tributesLoading = document.getElementById("tributes-loading");
   const tributesError = document.getElementById("tributes-error");
 
