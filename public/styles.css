@@ -91,12 +91,11 @@ a:hover {
   margin: 0 auto;
 }
 
+/* H1 tuned to aim for ~3 lines on desktop */
 .hero-text h1 {
-  font-size: clamp(2.4rem, 3.2vw, 3rem); /* slightly smaller, responsive */
-  line-height: 1.1;
-  max-width: 42rem; /* give it more room so “here” doesn’t drop alone */
-}
-
+  font-size: clamp(2.2rem, 3vw, 2.6rem);
+  line-height: 1.15;
+  max-width: 40rem;
 }
 
 .hero-text .quote {
@@ -149,7 +148,22 @@ a:hover {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
   margin-bottom: 1.5rem;
-  .privacy-card {
+}
+
+.step {
+  background: #020617;
+  border-radius: 0.9rem;
+  padding: 1.1rem;
+  border: 1px solid #1f2937;
+}
+
+.step h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Privacy card is its own block, styled like a step */
+.privacy-card {
   margin-top: 2rem;
   padding: 1.5rem 1.75rem;
   border-radius: 1rem;
@@ -166,20 +180,6 @@ a:hover {
 .privacy-card ul {
   margin-left: 1.25rem;
   list-style: disc;
-}
-
-}
-
-.step {
-  background: #020617;
-  border-radius: 0.9rem;
-  padding: 1.1rem;
-  border: 1px solid #1f2937;
-}
-
-.step h3 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
 }
 
 .ui-notes ul {
@@ -260,6 +260,10 @@ input:focus {
   color: #9ca3af;
 }
 
+.small-note.center {
+  text-align: center;
+}
+
 .site-footer {
   border-top: 1px solid #1f2937;
   text-align: center;
@@ -268,21 +272,7 @@ input:focus {
   color: #9ca3af;
 }
 
-/* Responsive */
-@media (max-width: 800px) {
-  .hero,
-  .auth-section {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .hero {
-    padding-top: 2rem;
-  }
-
-  .site-header nav {
-    gap: 0.6rem;
-  }
-/* INVITE BANNER FIX */
+/* Invite banner */
 #invite-banner {
   display: none;
   background: #1f2937;
@@ -297,6 +287,7 @@ input:focus {
   font-size: 1.1rem;
   line-height: 1.5;
 }
+
 .consent-row {
   display: flex;
   align-items: flex-start;
@@ -312,41 +303,6 @@ input:focus {
 
 #invite-banner button {
   margin-top: 15px;
-}
-
-  .site-header nav a {
-    font-size: 0.8rem;
-  }
-}
-.site-footer .book-link {
-  margin-top: 4px;
-  font-size: 0.85rem;
-}
-
-.site-footer .book-link a {
-  color: #9ca3af; /* soft gray */
-  text-decoration: none;
-}
-
-.site-footer .book-link a:hover {
-  text-decoration: underline;
-  color: #e5e7eb;
-}
-/* Invite banner */
-.invite-banner {
-  background: #10192d;
-  color: #f9fbff;
-  padding: 0.9rem 1.5rem;
-  font-size: 0.95rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.invite-banner p {
-  margin: 0.2rem 0;
-}
-
-.invite-banner .btn.small {
-  margin-top: 0.5rem;
 }
 
 /* Share / write sections */
@@ -385,15 +341,6 @@ input:focus {
   margin-top: 0.5rem;
 }
 
-.small-note {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-.small-note.center {
-  text-align: center;
-}
-
 /* Small button size */
 .btn.small {
   font-size: 0.85rem;
@@ -405,13 +352,14 @@ input:focus {
   margin-top: 2rem;
   text-align: center;
 }
+
 .book-feature {
   text-align: center;
   margin-top: 20px;
 }
 
 .book-feature img.book-thumb {
-  width: 170px; /* or whatever size looks best */
+  width: 170px;
   display: block;
   margin: 0 auto;
 }
@@ -419,8 +367,9 @@ input:focus {
 .book-caption {
   margin-top: 8px;
   font-size: 0.9rem;
-  color: #ccc; /* adjust if needed */
+  color: #ccc;
 }
+
 .step-label {
   font-size: 0.75rem;
   letter-spacing: 0.12em;
@@ -429,22 +378,35 @@ input:focus {
   font-weight: 600;
   margin-bottom: 0.3rem;
 }
+
 em.aboutme {
   font-style: italic !important;
 }
-/* Wider hero text on desktop to prevent orphaned words */
-.hero-text h1 {
-  max-width: 60rem; /* was too narrow before */
-}
 
-/* Make hero heading fit into 3 lines cleanly on desktop */
+/* Larger screens */
 @media (min-width: 900px) {
   .hero-text h1 {
-    font-size: 2.4rem;    /* reduced size */
-    line-height: 1.15;    /* tighter spacing */
-    max-width: 640px;     /* prevents overly long lines */
+    font-size: 2.5rem;
+    max-width: 42rem;
   }
 }
 
-}
+/* Responsive layout for smaller screens */
+@media (max-width: 800px) {
+  .hero,
+  .auth-section {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
+  .hero {
+    padding-top: 2rem;
+  }
+
+  .site-header nav {
+    gap: 0.6rem;
+  }
+
+  .site-header nav a {
+    font-size: 0.8rem;
+  }
+}
