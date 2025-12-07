@@ -48,7 +48,9 @@
   // Update top-left site label
   // ---------------------------------------
 
-  const brandEl = document.querySelector(".brand, #brand, header .logo, .site-title");
+  const brandEl = document.querySelector(
+    ".brand, #brand, header .logo, .site-title"
+  );
   if (brandEl) brandEl.textContent = "What Would They Say About Me?";
 
   // ---------------------------------------
@@ -56,10 +58,12 @@
   // ---------------------------------------
 
   const shareNameInput = document.getElementById("share-name");
+  // Prefill share-name with logged-in user's name if available
   if (shareNameInput && currentUser && currentUser.name) {
-  shareNameInput.value = currentUser.name;
-  shareNameInput.readOnly = true; // prevents typing something random
-}
+    shareNameInput.value = currentUser.name;
+    shareNameInput.readOnly = true; // prevents typing something random
+  }
+
   const shareGenerateBtn = document.getElementById("share-generate");
   const shareUrlInput = document.getElementById("share-url");
   const shareResult = document.getElementById("share-result");
@@ -164,7 +168,7 @@
   }
 
   // ---------------------------------------
-  // Save tribute
+  // Save tribute  (POST /api/tributes)
   // ---------------------------------------
 
   const tributeFromInput = document.getElementById("tribute-from");
@@ -183,14 +187,18 @@
       const token = getToken();
 
       try {
-       const res = await fetch(
-  `${API_BASE}/api/my-tributes?userId=${encodeURIComponent(currentUser.id)}`,
-  {
-    method: "GET",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  }
-);
-
+        const res = await fetch(`${API_BASE}/api/tributes`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            toName: currentInviteName,
+            fromName,
+            message,
+          }),
+        });
 
         const data = await safeJson(res);
 
@@ -297,7 +305,7 @@
   }
 
   // ---------------------------------------
-  // My Tributes
+  // My Tributes (GET /api/my-tributes)
   // ---------------------------------------
 
   const tributesListEl = document.getElementById("tributes-list");
@@ -310,29 +318,32 @@
 
       const token = getToken();
 
+      if (!currentUser || !currentUser.id) {
+        tributesLoading.style.display = "none";
+        tributesError.style.display = "block";
+        tributesError.textContent = "Log in to see your tributes.";
+        return;
+      }
+
       try {
-        const res = await fetch(`${API_BASE}/api/tributes?to=${encodeURIComponent(currentUser?.name || "")}`, {
-          method: "GET",
-          headers: token
-            ? { Authorization: `Bearer ${token}` }
-            : {},
-        });
+        const res = await fetch(
+          `${API_BASE}/api/my-tributes?userId=${encodeURIComponent(
+            currentUser.id
+          )}`,
+          {
+            method: "GET",
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }
+        );
 
         const data = await safeJson(res);
 
         tributesLoading.style.display = "none";
 
-        if (res.status === 401) {
-          tributesError.style.display = "block";
-          tributesError.textContent =
-            "Log in to see your tributes.";
-          return;
-        }
-
         if (!data || !data.ok) {
           tributesError.style.display = "block";
           tributesError.textContent =
-            data.error || "Could not load tributes.";
+            (data && data.error) || "Could not load tributes.";
           return;
         }
 
@@ -378,48 +389,52 @@
       }
     })();
   }
-const fbEmail = document.getElementById("fb-email");
-const fbMessage = document.getElementById("fb-message");
-const fbSend = document.getElementById("fb-send");
-const fbStatus = document.getElementById("fb-status");
-
-if (fbSend) {
-  fbSend.addEventListener("click", async () => {
-    const email = fbEmail.value.trim();
-    const message = fbMessage.value.trim();
-
-    if (!message) {
-      fbStatus.textContent = "Please enter a message.";
-      fbStatus.style.color = "salmon";
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_BASE}/api/feedback`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, message })
-      });
-
-      const data = await res.json();
-
-      if (data.ok) {
-        fbStatus.textContent = "Thanks for your feedback!";
-        fbStatus.style.color = "lightgreen";
-        fbMessage.value = "";
-      } else {
-        fbStatus.textContent = data.error || "Error sending feedback.";
-        fbStatus.style.color = "salmon";
-      }
-    } catch (err) {
-      fbStatus.textContent = "Server error. Try again later.";
-      fbStatus.style.color = "salmon";
-    }
-  });
-}
 
   // ---------------------------------------
-  // FEEDBACK FORM (Option 3)
+  // Simple feedback button (fb-*)
+  // ---------------------------------------
+  const fbEmail = document.getElementById("fb-email");
+  const fbMessage = document.getElementById("fb-message");
+  const fbSend = document.getElementById("fb-send");
+  const fbStatus = document.getElementById("fb-status");
+
+  if (fbSend) {
+    fbSend.addEventListener("click", async () => {
+      const email = fbEmail.value.trim();
+      const message = fbMessage.value.trim();
+
+      if (!message) {
+        fbStatus.textContent = "Please enter a message.";
+        fbStatus.style.color = "salmon";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/feedback`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, message }),
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          fbStatus.textContent = "Thanks for your feedback!";
+          fbStatus.style.color = "lightgreen";
+          fbMessage.value = "";
+        } else {
+          fbStatus.textContent = data.error || "Error sending feedback.";
+          fbStatus.style.color = "salmon";
+        }
+      } catch (err) {
+        fbStatus.textContent = "Server error. Try again later.";
+        fbStatus.style.color = "salmon";
+      }
+    });
+  }
+
+  // ---------------------------------------
+  // FEEDBACK FORM (Option 3) – if present
   // ---------------------------------------
 
   const feedbackForm = document.getElementById("feedback-form");
@@ -465,6 +480,64 @@ if (fbSend) {
         }
       } catch {
         setStatus(feedbackStatus, "Server error. Try again later.", "salmon");
+      }
+    });
+  }
+
+  // ---------------------------------------
+  // DELETE ACCOUNT (frontend wiring)
+  // ---------------------------------------
+  const deleteBtn = document.getElementById("delete-account");
+  const deleteStatus = document.getElementById("delete-status");
+
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", async () => {
+      if (!currentUser || !currentUser.id) {
+        if (deleteStatus) {
+          deleteStatus.textContent =
+            "You need to be logged in to delete your account.";
+          deleteStatus.style.color = "salmon";
+        }
+        return;
+      }
+
+      const sure = window.confirm(
+        "This will delete your account and tributes written for you. This cannot be undone. Continue?"
+      );
+      if (!sure) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/account`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id }),
+        });
+
+        const data = await safeJson(res);
+
+        if (data && data.ok) {
+          localStorage.removeItem("aboutme_user");
+          localStorage.removeItem("aboutme_token");
+          if (deleteStatus) {
+            deleteStatus.textContent = "Account deleted.";
+            deleteStatus.style.color = "lightgreen";
+          }
+          setTimeout(() => {
+            window.location.reload();
+          }, 800);
+        } else {
+          if (deleteStatus) {
+            deleteStatus.textContent =
+              (data && data.error) || "Could not delete account.";
+            deleteStatus.style.color = "salmon";
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        if (deleteStatus) {
+          deleteStatus.textContent = "Server error. Try again later.";
+          deleteStatus.style.color = "salmon";
+        }
       }
     });
   }
