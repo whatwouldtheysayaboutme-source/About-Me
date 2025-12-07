@@ -56,6 +56,10 @@
   // ---------------------------------------
 
   const shareNameInput = document.getElementById("share-name");
+  if (shareNameInput && currentUser && currentUser.name) {
+  shareNameInput.value = currentUser.name;
+  shareNameInput.readOnly = true; // prevents typing something random
+}
   const shareGenerateBtn = document.getElementById("share-generate");
   const shareUrlInput = document.getElementById("share-url");
   const shareResult = document.getElementById("share-result");
