@@ -245,6 +245,46 @@ app.get("/api/my-tributes", async (req, res) => {
   }
 });
 
+// DELETE ACCOUNT
+app.delete("/api/account", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ ok: false, error: "Missing userId." });
+    }
+
+    const users = db.collection("users");
+    const tributes = db.collection("tributes");
+
+    let user;
+    try {
+      user = await users.findOne({ _id: new ObjectId(userId) });
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: "Invalid userId." });
+    }
+
+    if (!user) {
+      return res.status(404).json({ ok: false, error: "User not found." });
+    }
+
+    // Delete tributes addressed to this user
+    await tributes.deleteMany({
+      $or: [
+        { recipientId: user._id },
+        { toName: user.name }
+      ],
+    });
+
+    // Delete the user
+    await users.deleteOne({ _id: user._id });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("/api/account DELETE error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
 
 // -----------------------------
 // GENERIC LIST TRIBUTES (by ?to=Name)
