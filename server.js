@@ -200,9 +200,7 @@ app.post("/api/tributes", async (req, res) => {
 });
 
 // -----------------------------
-// LIST TRIBUTES FOR LOGGED-IN USER (by userId -> name)
-// (Currently your frontend uses /api/tributes?to=..., but this is kept in case we use it later.)
-// -----------------------------
+// LIST TRIBUTES FOR LOGGED-IN USER
 app.get("/api/my-tributes", async (req, res) => {
   try {
     const userId = req.query.userId;
@@ -228,8 +226,14 @@ app.get("/api/my-tributes", async (req, res) => {
 
     const tributes = db.collection("tributes");
 
+    // ✅ look up by recipientId OR by toName (covers old + new tributes)
     const results = await tributes
-      .find({ toName: user.name })
+      .find({
+        $or: [
+          { recipientId: user._id },
+          { toName: user.name }
+        ]
+      })
       .sort({ createdAt: -1 })
       .limit(50)
       .toArray();
@@ -240,6 +244,7 @@ app.get("/api/my-tributes", async (req, res) => {
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
+
 
 // -----------------------------
 // GENERIC LIST TRIBUTES (by ?to=Name)
