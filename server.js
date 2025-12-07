@@ -175,7 +175,7 @@ app.post("/api/tributes", async (req, res) => {
     const cleanedFromName =
       fromName && typeof fromName === "string" ? fromName.trim() : null;
 
-    // Optional: try to find a user whose name matches toName
+    // Try to find a user whose name matches toName
     let recipientId = null;
     if (cleanedToName) {
       const recipient = await users.findOne({ name: cleanedToName });
@@ -186,7 +186,7 @@ app.post("/api/tributes", async (req, res) => {
       toName: cleanedToName,
       fromName: cleanedFromName,
       message: message.trim(),
-      recipientId: recipientId || null, // future-proof, not required for frontend
+      recipientId: recipientId || null,
       createdAt: new Date(),
     };
 
@@ -201,6 +201,7 @@ app.post("/api/tributes", async (req, res) => {
 
 // -----------------------------
 // LIST TRIBUTES FOR LOGGED-IN USER
+// -----------------------------
 app.get("/api/my-tributes", async (req, res) => {
   try {
     const userId = req.query.userId;
@@ -226,13 +227,12 @@ app.get("/api/my-tributes", async (req, res) => {
 
     const tributes = db.collection("tributes");
 
-    // ✅ look up by recipientId OR by toName (covers old + new tributes)
     const results = await tributes
       .find({
         $or: [
           { recipientId: user._id },
-          { toName: user.name }
-        ]
+          { toName: user.name },
+        ],
       })
       .sort({ createdAt: -1 })
       .limit(50)
@@ -245,50 +245,8 @@ app.get("/api/my-tributes", async (req, res) => {
   }
 });
 
-// DELETE ACCOUNT
-app.delete("/api/account", async (req, res) => {
-  try {
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ ok: false, error: "Missing userId." });
-    }
-
-    const users = db.collection("users");
-    const tributes = db.collection("tributes");
-
-    let user;
-    try {
-      user = await users.findOne({ _id: new ObjectId(userId) });
-    } catch (err) {
-      return res.status(400).json({ ok: false, error: "Invalid userId." });
-    }
-
-    if (!user) {
-      return res.status(404).json({ ok: false, error: "User not found." });
-    }
-
-    // Delete tributes addressed to this user
-    await tributes.deleteMany({
-      $or: [
-        { recipientId: user._id },
-        { toName: user.name }
-      ],
-    });
-
-    // Delete the user
-    await users.deleteOne({ _id: user._id });
-
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error("/api/account DELETE error:", err);
-    return res.status(500).json({ ok: false, error: "Server error" });
-  }
-});
-
 // -----------------------------
 // GENERIC LIST TRIBUTES (by ?to=Name)
-// This is what your frontend is using now.
 // -----------------------------
 app.get("/api/tributes", async (req, res) => {
   try {
@@ -314,6 +272,44 @@ app.get("/api/tributes", async (req, res) => {
 });
 
 // -----------------------------
+// DELETE ACCOUNT
+// -----------------------------
+app.delete("/api/account", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ ok: false, error: "Missing userId." });
+    }
+
+    const users = db.collection("users");
+    const tributes = db.collection("tributes");
+
+    let user;
+    try {
+      user = await users.findOne({ _id: new ObjectId(userId) });
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: "Invalid userId." });
+    }
+
+    if (!user) {
+      return res.status(404).json({ ok: false, error: "User not found." });
+    }
+
+    await tributes.deleteMany({
+      $or: [{ recipientId: user._id }, { toName: user.name }],
+    });
+
+    await users.deleteOne({ _id: user._id });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("/api/account DELETE error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
+
+// -----------------------------
 // FEEDBACK ENDPOINT
 // -----------------------------
 app.post("/api/feedback", async (req, res) => {
@@ -324,7 +320,6 @@ app.post("/api/feedback", async (req, res) => {
       return res.json({ ok: false, error: "Missing message." });
     }
 
-    // Right now you just log it. Later you could store in DB or send email.
     console.log("Feedback received:", {
       email: email || "(no email)",
       message,
