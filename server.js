@@ -178,7 +178,7 @@ app.get('/api/my-tributes', async (req, res) => {
     let user;
 
     try {
-      user = await users.findOne({ _id: new MongoClient.ObjectId(userId) });
+    user = await users.findOne({ _id: new ObjectId(userId) });
     } catch (err) {
       return res.status(400).json({ ok: false, error: "Invalid userId" });
     }
