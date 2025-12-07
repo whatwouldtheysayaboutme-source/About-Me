@@ -179,18 +179,14 @@
       const token = getToken();
 
       try {
-        const res = await fetch(`${API_BASE}/api/tributes`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            toName: currentInviteName,
-            fromName,
-            message,
-          }),
-        });
+       const res = await fetch(
+  `${API_BASE}/api/my-tributes?userId=${encodeURIComponent(currentUser.id)}`,
+  {
+    method: "GET",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  }
+);
+
 
         const data = await safeJson(res);
 
