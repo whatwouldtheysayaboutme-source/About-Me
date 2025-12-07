@@ -336,63 +336,6 @@ app.post("/api/feedback", async (req, res) => {
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
-// ---------------------------------------
-// DELETE ACCOUNT
-// ---------------------------------------
-const deleteBtn = document.getElementById("delete-account");
-const deleteStatus = document.getElementById("delete-status");
-
-if (deleteBtn) {
-  deleteBtn.addEventListener("click", async () => {
-    if (!currentUser || !currentUser.id) {
-      if (deleteStatus) {
-        deleteStatus.textContent = "You need to be logged in to delete your account.";
-        deleteStatus.style.color = "salmon";
-      }
-      return;
-    }
-
-    const sure = window.confirm(
-      "This will delete your account and tributes written for you. This cannot be undone. Continue?"
-    );
-    if (!sure) return;
-
-    try {
-      const res = await fetch(`${API_BASE}/api/account`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id }),
-      });
-
-      const data = await safeJson(res);
-
-      if (data && data.ok) {
-        // Clear local storage and reload
-        localStorage.removeItem("aboutme_user");
-        localStorage.removeItem("aboutme_token");
-        if (deleteStatus) {
-          deleteStatus.textContent = "Account deleted.";
-          deleteStatus.style.color = "lightgreen";
-        }
-        setTimeout(() => {
-          window.location.reload();
-        }, 800);
-      } else {
-        if (deleteStatus) {
-          deleteStatus.textContent =
-            (data && data.error) || "Could not delete account.";
-          deleteStatus.style.color = "salmon";
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      if (deleteStatus) {
-        deleteStatus.textContent = "Server error. Try again later.";
-        deleteStatus.style.color = "salmon";
-      }
-    }
-  });
-}
 
 // -----------------------------
 // START SERVER
