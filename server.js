@@ -321,6 +321,38 @@ app.delete("/api/account", async (req, res) => {
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
+// -----------------------------
+// UPDATE PROFILE PHOTO
+// -----------------------------
+app.post("/api/profile-photo", async (req, res) => {
+  try {
+    const { userId, photoData } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ ok: false, error: "Missing userId." });
+    }
+
+    const users = db.collection("users");
+
+    let userObjectId;
+    try {
+      userObjectId = new ObjectId(userId);
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: "Invalid userId." });
+    }
+
+    // photoData can be a data URL (from uploaded file) or a normal URL
+    await users.updateOne(
+      { _id: userObjectId },
+      { $set: { photoData: photoData || null } }
+    );
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("/api/profile-photo error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
 
 // -----------------------------
 // FEEDBACK ENDPOINT
