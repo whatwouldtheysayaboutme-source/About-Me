@@ -670,21 +670,52 @@
       }
     });
   }
-  // ---------------------------------------
+    // ---------------------------------------
   // PROFILE PHOTO (local-only)
   // ---------------------------------------
 
   const photoInput = document.getElementById("profile-photo-url");
+  const photoFileInput = document.getElementById("profile-photo-file");
   const photoSaveBtn = document.getElementById("profile-photo-save");
   const photoStatus = document.getElementById("profile-photo-status");
 
   // Load any existing photo on page load
   const existingPhoto = loadProfilePhoto();
-  if (photoInput && existingPhoto) {
-    photoInput.value = existingPhoto;
+  if (existingPhoto) {
+    if (photoInput) photoInput.value = existingPhoto.startsWith("data:")
+      ? ""
+      : existingPhoto; // if it's a URL, show it; if it's a data URL, leave field blank
     updateProfilePhotoPreview(existingPhoto);
   }
 
+  // Handle file upload
+  if (photoFileInput) {
+    photoFileInput.addEventListener("change", () => {
+      const file = photoFileInput.files && photoFileInput.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        setStatus(photoStatus, "Please choose an image file.", "salmon");
+        photoFileInput.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result;
+        saveProfilePhoto(dataUrl);
+        updateProfilePhotoPreview(dataUrl);
+        setStatus(photoStatus, "Photo uploaded on this device.", "lightgreen");
+      };
+      reader.onerror = () => {
+        setStatus(photoStatus, "Could not read file.", "salmon");
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Handle manual URL save
   if (photoSaveBtn && photoInput) {
     photoSaveBtn.addEventListener("click", () => {
       const url = photoInput.value.trim();
