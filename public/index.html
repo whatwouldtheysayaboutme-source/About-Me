@@ -3,14 +3,23 @@
 <head>
   <!-- Social Share / Open Graph -->
   <meta property="og:title" content="About Me – Hear It While You’re Here">
-  <meta property="og:description" content="Tell the people you care about what they mean to you — while they’re still here to hear it.">
-  <meta property="og:image" content="https://about-me-b3nx.onrender.com/og-image.png">
+  <meta
+    property="og:description"
+    content="Tell the people you care about what they mean to you — while they’re still here to hear it."
+  >
+  <meta
+    property="og:image"
+    content="https://about-me-b3nx.onrender.com/og-image.png"
+  >
   <meta property="og:url" content="https://about-me-b3nx.onrender.com/">
   <meta property="og:type" content="website">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://about-me-b3nx.onrender.com/og-image.png">
+  <meta
+    name="twitter:image"
+    content="https://about-me-b3nx.onrender.com/og-image.png"
+  >
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -27,7 +36,9 @@
 </head>
 
 <body>
-  <!-- HEADER -->
+  <!-- =========================
+       HEADER
+  ========================== -->
   <header class="site-header">
     <div class="logo">About<span>Me</span></div>
     <nav>
@@ -108,7 +119,7 @@
         <div class="step">
           <h3>2. Invite friends &amp; family</h3>
           <p>
-            Send a private link to the people who know you best so they can write a
+            Send a private invitation link to the people who know you best so they can write a
             “living eulogy” or tribute.
           </p>
         </div>
@@ -144,7 +155,7 @@
           Create an account to claim your <em class="aboutme">About Me</em> page.
         </p>
 
-        <!-- REAL SIGNUP FORM (single instance) -->
+        <!-- SIGNUP FORM -->
         <form id="signup-form">
           <label>
             Username
@@ -220,17 +231,18 @@
         </ul>
       </div>
     </section>
-      <!-- =========================
-         OPTIONAL PROFILE PHOTO (LOCAL)
+
+    <!-- =========================
+         OPTIONAL PROFILE PHOTO
     ========================== -->
     <section id="profile-photo" class="section profile-section">
       <h2>Your profile photo</h2>
       <p class="small-note">
         Add a photo for how you want to appear here. Right now this is saved
-        only on this device.
+        on this device and synced to your account when possible.
       </p>
 
-      <!-- REAL FILE UPLOAD -->
+      <!-- FILE UPLOAD -->
       <label class="small-note" style="display:block; margin-top:0.75rem;">
         Upload a photo
         <input
@@ -273,17 +285,16 @@
       </div>
     </section>
 
-
     <!-- =========================
-         STEP 2 – SHARE YOUR PAGE
+         STEP 2 – INVITE FRIENDS
     ========================== -->
     <section id="share" class="section share-section">
       <p class="step-label">Step 2 – Invite friends &amp; family</p>
       <h2>Share your <em class="aboutme">About Me</em> page</h2>
 
       <p>
-        Generate a personal link to send to friends and family.
-        When they open it, they’ll see an invitation to write a message for you.
+        Send a personal invitation email to friends and family.
+        They’ll get a private link where they can write what you mean to them.
       </p>
 
       <div class="share-form">
@@ -291,14 +302,16 @@
           Your name (as you want it to appear)
           <input type="text" id="share-name" placeholder="Your Name" />
         </label>
-<label style="margin-top:0.75rem; display:block;">
-  Friend's email
-  <input type="email" id="share-email" placeholder="friend@example.com" />
-</label>
 
-       <button class="btn primary" id="share-generate">Send email invitation</button>
+        <label style="margin-top:0.75rem; display:block;">
+          Friend's email
+          <input type="email" id="share-email" placeholder="friend@example.com" />
+        </label>
 
-        
+        <button class="btn primary" id="share-generate">
+          Send email invitation
+        </button>
+
         <p id="share-status" class="small-note"></p>
       </div>
     </section>
@@ -309,7 +322,8 @@
     <section id="write" class="section write-section">
       <p class="step-label">Step 3 – Read, save, and share</p>
       <h2>Write your message</h2>
-      <!-- Honoree profile photo (shown if available for the person you’re writing about) -->
+
+      <!-- Honoree profile photo (shown if available) -->
       <div
         id="honoree-photo"
         class="profile-photo-preview"
@@ -321,18 +335,14 @@
       <p id="write-to-line" class="small-note">
         If you followed a friend’s link, this is where you can write what they mean to you.
       </p>
-  <!-- Honeypot field to catch bots (humans never see this) -->
-  <div style="display:none;">
-    <label>
-      Leave this field empty
-      <input
-        type="text"
-        id="hp-field"
-        name="hp-field"
-        autocomplete="off"
-      />
-    </label>
-  </div>
+
+      <!-- Honeypot field – humans won't see this, bots might fill it -->
+      <div style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;">
+        <label>
+          Do not fill this field:
+          <input type="text" id="hp-field" name="hp-field" autocomplete="off" />
+        </label>
+      </div>
 
       <!-- Who is writing the tribute -->
       <label
@@ -346,30 +356,24 @@
           placeholder="How you want your name to appear"
         />
       </label>
-<!-- Honeypot field – humans won't see this, bots might fill it -->
-<div style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;">
-  <label>
-    Do not fill this field:
-    <input type="text" id="hp-field" name="hp-field" autocomplete="off" />
-  </label>
-</div>
+
       <textarea
-  id="tribute-text"
-  placeholder="Write what you would say in a eulogy – but while they’re still here."
-></textarea>
+        id="tribute-text"
+        placeholder="Write what you would say in a eulogy – but while they’re still here."
+      ></textarea>
 
-<label
-  class="small-note"
-  style="display:flex; align-items:center; gap:0.4rem; margin-top:0.5rem;"
->
-  <input type="checkbox" id="tribute-public" checked />
-  Make this tribute public (it can appear on your page)
-</label>
+      <label
+        class="small-note"
+        style="display:flex; align-items:center; gap:0.4rem; margin-top:0.5rem;"
+      >
+        <input type="checkbox" id="tribute-public" checked />
+        Make this tribute public (it can appear on your page)
+      </label>
 
-<div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
-  <button class="btn primary" id="save-tribute">Save on About Me</button>
-  <button class="btn btn-outline" id="copy-tribute">Copy message</button>
-</div>
+      <div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button class="btn primary" id="save-tribute">Save on About Me</button>
+        <button class="btn btn-outline" id="copy-tribute">Copy message</button>
+      </div>
 
       <p id="tribute-status" class="small-note"></p>
     </section>
@@ -450,14 +454,14 @@
   <!-- =========================
        FEEDBACK
   ========================== -->
-  <section id="feedback" style="margin-top: 40px;">
+  <section id="feedback" class="section feedback-section" style="margin-top: 40px;">
     <h2>Send Feedback</h2>
     <p>Your thoughts help us improve About Me.</p>
 
     <input id="fb-email" type="email" placeholder="Your email (optional)" />
     <textarea id="fb-message" placeholder="Your feedback..." rows="4"></textarea>
 
-    <button id="fb-send">Send feedback</button>
+    <button id="fb-send" class="btn primary">Send feedback</button>
     <p id="fb-status" class="small-note"></p>
   </section>
 
@@ -489,7 +493,7 @@
       <p id="delete-status" class="small-note"></p>
     </div>
 
-    <!-- Book moved to the bottom and centered -->
+    <!-- Book feature -->
     <div class="book-feature">
       <a
         href="https://draft2digital.com/book/2988647"
@@ -584,7 +588,7 @@
     </p>
   </section>
 
-  <!-- Terms &amp; Liability Modal -->
+  <!-- Terms & Liability Modal -->
   <div id="termsModal" class="modal" style="display:none;">
     <div class="modal-content">
       <h2>Terms of Use &amp; Liability Waiver</h2>
