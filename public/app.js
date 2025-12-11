@@ -577,6 +577,20 @@ if (agreeCheckbox && agreeBtn && termsModal) {
     }
   });
 }
+// ===== LOGOUT BUTTON =====
+const logoutBtn = document.getElementById("logout");
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    // Clear likely auth-related keys without breaking other stuff
+    ["token", "authToken", "userId", "username", "currentUser"].forEach((key) =>
+      localStorage.removeItem(key)
+    );
+
+    // Reload so the user sees the logged-out state
+    window.location.reload();
+  });
+}
 
 // Gate signup & login behind the waiver
 const signupForm = document.getElementById("signup-form");
