@@ -418,29 +418,39 @@
           return;
         }
 
-        tributes.forEach((t) => {
-          const card = document.createElement("article");
-          card.className = "tribute-card";
+      tributes.forEach((t) => {
+  const card = document.createElement("article");
+  card.className = "tribute-card";
 
-          const fromLine = document.createElement("p");
-          fromLine.innerHTML = `<strong>From:</strong> ${
-            t.fromName || "Someone who cares"
-          }`;
+  const fromLine = document.createElement("p");
+  fromLine.innerHTML = `<strong>From:</strong> ${
+    t.fromName || "Someone who cares"
+  }`;
 
-          const msg = document.createElement("p");
-          msg.textContent = t.message;
+  const msg = document.createElement("p");
+  msg.textContent = t.message;
 
-          const meta = document.createElement("p");
-          meta.className = "small-note";
-          if (t.createdAt)
-            meta.textContent = new Date(t.createdAt).toLocaleString();
+  const meta = document.createElement("p");
+  meta.className = "small-note";
+  if (t.createdAt) {
+    meta.textContent = new Date(t.createdAt).toLocaleString();
+  }
 
-          card.appendChild(fromLine);
-          card.appendChild(msg);
-          if (meta.textContent) card.appendChild(meta);
+  // Privacy label
+  if (t.isPublic === false) {
+    const privacy = document.createElement("p");
+    privacy.className = "small-note";
+    privacy.textContent = "Private tribute (only visible to you)";
+    card.appendChild(privacy);
+  }
 
-          tributesListEl.appendChild(card);
-        });
+  card.appendChild(fromLine);
+  card.appendChild(msg);
+  if (meta.textContent) card.appendChild(meta);
+
+  tributesListEl.appendChild(card);
+});
+
       } catch (err) {
         console.error(err);
         tributesLoading.style.display = "none";
