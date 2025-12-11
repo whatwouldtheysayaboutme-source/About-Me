@@ -25,6 +25,120 @@ if (!MONGODB_URI) {
 let db;
 
 // -----------------------------
+// MODERATION HELPERS
+// -----------------------------
+
+// A moderate profanity list (not exhaustive, but solid for v1)
+// You can add/remove words as you choose.
+const PROFANITY_LIST = [
+  "fuck",
+  "fck",
+  "fuk",
+  "shit",
+  "bitch",
+  "bastard",
+  "asshole",
+  "dick",
+  "cunt",
+  "slut",
+  "whore",
+  "motherfucker",
+  "mf",
+  "faggot",
+  "fag",
+  "retard",
+  "retarded",
+  "nigger",
+  "nigga",
+  "cock",
+  "pussy",
+  "twat",
+  "damn",
+  "goddamn",
+];
+
+// Loosen up the text so f@ck, f*ck, f u c k all normalize to "fuck".
+function normalizeForProfanity(text) {
+  if (!text || typeof text !== "string") return "";
+
+  return text
+    .toLowerCase()
+    .replace(/[@$!1\|\*]/g, "i")   // @, $, !, 1, |, * → i-ish
+    .replace(/0/g, "o")           // 0 → o
+    .replace(/3/g, "e")           // 3 → e
+    .replace(/4/g, "a")           // 4 → a
+    .replace(/5/g, "s")           // 5 → s
+    .replace(/[^a-z0-9\s]/g, " ") // strip other symbols
+    .replace(/\s+/g, " ");        // collapse spaces
+}
+
+function containsProfanity(text) {
+  const normalized = normalizeForProfanity(text);
+  if (!normalized) return false;
+
+  // Simple word-based check
+  const words = normalized.split(" ");
+  for (const w of words) {
+    if (!w) continue;
+    if (PROFANITY_LIST.includes(w)) {
+      return true;
+    }
+  }
+
+  // Also check substrings for some strong words
+  for (const bad of PROFANITY_LIST) {
+    if (normalized.includes(bad)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// Very basic spam checks
+function looksLikeSpam(message) {
+  if (!message || typeof message !== "string") return true;
+  const text = message.trim();
+
+  // Too short to be meaningful
+  if (text.length < 5) return true;
+
+  // Very long = suspicious (simple upper bound)
+  if (text.length > 5000) return true;
+
+  // Same character repeated too much: "aaaaaa", "!!!!!!!", etc.
+  if (/^(.)\1{9,}$/.test(text.replace(/\s/g, ""))) {
+    return true;
+  }
+
+  // Too many URLs
+  const urlMatches = text.match(/https?:\/\/[^\s]+/gi);
+  if (urlMatches && urlMatches.length > 3) {
+    return true;
+  }
+
+  // One word repeated over and over
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length > 10) {
+    const counts = {};
+    for (const w of words) {
+      counts[w] = (counts[w] || 0) + 1;
+    }
+    const maxCount = Math.max(...Object.values(counts));
+    // if one word is > 70% of the message, it's probably spammy
+    if (maxCount / words.length > 0.7) return true;
+  }
+
+  return false;
+}
+
+
+// -----------------------------
 // CONNECT TO MONGODB
 // -----------------------------
 async function connectToMongo() {
