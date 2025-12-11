@@ -297,12 +297,24 @@
   // Save tribute  (POST /api/tributes)
   // ---------------------------------------
 
-  const saveTributeBtn = document.getElementById("save-tribute");
+   const saveTributeBtn = document.getElementById("save-tribute");
 
   if (saveTributeBtn && tributeText) {
     saveTributeBtn.addEventListener("click", async () => {
       const message = tributeText.value.trim();
       const fromName = tributeFromInput ? tributeFromInput.value.trim() : "";
+      const honeypotValue = tributeHpField ? tributeHpField.value.trim() : "";
+
+      // If the honeypot has anything in it, assume it's a bot and bail out
+      if (honeypotValue) {
+        // Optional: don't tell them why, just give a generic message
+        setStatus(
+          tributeStatus,
+          "Something went wrong. Please try again.",
+          "salmon"
+        );
+        return;
+      }
 
       if (!message) {
         setStatus(tributeStatus, "Write a message before saving.", "salmon");
@@ -324,8 +336,10 @@
             fromName,
             message,
             isPublic,
+            hpField: honeypotValue, // send honeypot to backend too
           }),
         });
+
 
         const data = await safeJson(res);
 
