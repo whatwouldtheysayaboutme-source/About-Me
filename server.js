@@ -155,11 +155,11 @@ app.post("/api/login", async (req, res) => {
 });
 
 // -----------------------------
-// SAVE TRIBUTE
+// SAVE TRIBUTE  (stores isPublic)
 // -----------------------------
 app.post("/api/tributes", async (req, res) => {
   try {
-    const { toName, fromName, message } = req.body;
+    const { toName, fromName, message, isPublic } = req.body;
 
     if (!message || typeof message !== "string" || !message.trim()) {
       return res
@@ -175,6 +175,12 @@ app.post("/api/tributes", async (req, res) => {
     const cleanedFromName =
       fromName && typeof fromName === "string" ? fromName.trim() : null;
 
+    // Normalize isPublic: default true unless explicitly false
+    let isPublicFlag = true;
+    if (typeof isPublic === "boolean") {
+      isPublicFlag = isPublic;
+    }
+
     // Try to find a user whose name matches toName
     let recipientId = null;
     if (cleanedToName) {
@@ -187,6 +193,7 @@ app.post("/api/tributes", async (req, res) => {
       fromName: cleanedFromName,
       message: message.trim(),
       recipientId: recipientId || null,
+      isPublic: isPublicFlag,          // <--- store privacy flag
       createdAt: new Date(),
     };
 
@@ -201,6 +208,7 @@ app.post("/api/tributes", async (req, res) => {
 
 // -----------------------------
 // LIST TRIBUTES FOR LOGGED-IN USER
+// (shows BOTH public & private tributes)
 // -----------------------------
 app.get("/api/my-tributes", async (req, res) => {
   try {
@@ -229,10 +237,7 @@ app.get("/api/my-tributes", async (req, res) => {
 
     const results = await tributes
       .find({
-        $or: [
-          { recipientId: user._id },
-          { toName: user.name },
-        ],
+        $or: [{ recipientId: user._id }, { toName: user.name }],
       })
       .sort({ createdAt: -1 })
       .limit(50)
@@ -247,6 +252,7 @@ app.get("/api/my-tributes", async (req, res) => {
 
 // -----------------------------
 // GENERIC LIST TRIBUTES (by ?to=Name)
+// Only returns PUBLIC tributes
 // -----------------------------
 app.get("/api/tributes", async (req, res) => {
   try {
@@ -254,9 +260,14 @@ app.get("/api/tributes", async (req, res) => {
     const tributes = db.collection("tributes");
 
     const query = {};
+
     if (to && typeof to === "string") {
       query.toName = to.trim();
     }
+
+    // Only show public tributes when listing generically
+    // (treat docs with no isPublic as public for backward compatibility)
+    query.isPublic = { $ne: false };
 
     const items = await tributes
       .find(query)
