@@ -271,7 +271,7 @@ app.post("/api/login", async (req, res) => {
 });
 
 // -----------------------------
-// SAVE TRIBUTE  (stores isPublic)
+// SAVE TRIBUTE  (stores isPublic + moderation)
 // -----------------------------
 app.post("/api/tributes", async (req, res) => {
   try {
@@ -281,6 +281,23 @@ app.post("/api/tributes", async (req, res) => {
       return res
         .status(400)
         .json({ ok: false, error: "Message is required." });
+    }
+
+    // Spam / abuse checks
+    if (containsProfanity(message)) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "This message looks like it contains offensive language. Please rephrase it in a positive, respectful way.",
+      });
+    }
+
+    if (looksLikeSpam(message)) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "This message looks like spam or very low-quality text. Please write something more meaningful.",
+      });
     }
 
     const tributes = db.collection("tributes");
@@ -309,7 +326,7 @@ app.post("/api/tributes", async (req, res) => {
       fromName: cleanedFromName,
       message: message.trim(),
       recipientId: recipientId || null,
-      isPublic: isPublicFlag,          // <--- store privacy flag
+      isPublic: isPublicFlag,
       createdAt: new Date(),
     };
 
@@ -321,6 +338,7 @@ app.post("/api/tributes", async (req, res) => {
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
+
 
 // -----------------------------
 // LIST TRIBUTES FOR LOGGED-IN USER
