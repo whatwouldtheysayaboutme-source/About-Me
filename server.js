@@ -376,6 +376,37 @@ app.post("/api/feedback", async (req, res) => {
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
+// -----------------------------
+// LOOK UP USER BY NAME (for invites)
+// -----------------------------
+app.get("/api/user-by-name", async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    if (!name || typeof name !== "string") {
+      return res.status(400).json({ ok: false, error: "Missing name." });
+    }
+
+    const users = db.collection("users");
+    const user = await users.findOne({ name: name.trim() });
+
+    if (!user) {
+      return res.json({ ok: true, user: null });
+    }
+
+    return res.json({
+      ok: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        photoData: user.photoData || null,
+      },
+    });
+  } catch (err) {
+    console.error("/api/user-by-name error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
 
 // -----------------------------
 // START SERVER
