@@ -21,7 +21,8 @@
     }
   }
 
-  function saveProfilePhoto(url) {
+   async function saveProfilePhoto(url) {
+    // 1) Save locally so it loads fast on this device
     try {
       if (!url) {
         localStorage.removeItem(PROFILE_PHOTO_KEY);
@@ -29,7 +30,25 @@
         localStorage.setItem(PROFILE_PHOTO_KEY, url);
       }
     } catch {}
+
+    // 2) Also push to the backend so other people can see it
+    try {
+      if (currentUser && currentUser.id) {
+        await fetch(`${API_BASE}/api/profile-photo`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            photoData: url || "",
+          }),
+        });
+      }
+    } catch (err) {
+      console.error("Profile photo upload error:", err);
+      // We don't show an error to the user right now; local preview still works.
+    }
   }
+
 
   function updateProfilePhotoPreview(url) {
     const preview = document.getElementById("profile-photo-preview");
