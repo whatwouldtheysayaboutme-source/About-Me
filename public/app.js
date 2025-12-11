@@ -170,7 +170,8 @@
   const shareResult = document.getElementById("share-result");
   const shareCopyBtn = document.getElementById("share-copy");
   const shareStatus = document.getElementById("share-status");
-
+const shareEmailInput = document.getElementById("share-email");
+  
  if (shareGenerateBtn && shareNameInput) {
   shareGenerateBtn.addEventListener("click", () => {
     const name = shareNameInput.value.trim();
