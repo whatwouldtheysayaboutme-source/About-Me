@@ -359,16 +359,21 @@
       ></ins>
     </section>
   </main>
-<section id="feedback" class="container" style="margin-top: 40px;">
-  <h2>Send Feedback</h2>
-  <p>Your thoughts help us improve About Me.</p>
+  </main>
 
-  <input id="fb-email" type="email" placeholder="Your email (optional)" />
-  <textarea id="fb-message" placeholder="Your feedback..." rows="4"></textarea>
+  <!-- =========================
+       FEEDBACK
+  ========================== -->
+  <section id="feedback" class="container" style="margin-top: 40px;">
+    <h2>Send Feedback</h2>
+    <p>Your thoughts help us improve About Me.</p>
 
-  <button id="fb-send">Send feedback</button>
-  <p id="fb-status" class="small-note"></p>
-</section>
+    <input id="fb-email" type="email" placeholder="Your email (optional)" />
+    <textarea id="fb-message" placeholder="Your feedback..." rows="4"></textarea>
+
+    <button id="fb-send">Send feedback</button>
+    <p id="fb-status" class="small-note"></p>
+  </section>
 
   <!-- =========================
        FOOTER
@@ -381,6 +386,8 @@
 
     <p class="small-note">
       This site is intended for positive, respectful messages only.
+      <br />
+      <a href="#terms">Terms of Use &amp; Liability Waiver</a>
     </p>
 
     <div class="book-feature">
@@ -402,109 +409,112 @@
     </div>
   </footer>
 
-  <!-- App script -->
+  <!-- =========================
+       TERMS OF USE
+  ========================== -->
+  <section id="terms" class="terms-section">
+    <h2>Terms of Use &amp; Liability Waiver</h2>
+    <p><strong>Last updated: December 2025</strong></p>
+
+    <p>
+      By using About Me – Hear It While You’re Here (“the Service”), you agree to
+      the following Terms of Use and Liability Waiver.
+    </p>
+
+    <h3>1. Purpose of the Service</h3>
+    <p>
+      The Service provides a platform where users may write and receive positive
+      messages, reflections, and “living eulogies.” The Service is for personal,
+      non-commercial use.
+    </p>
+
+    <h3>2. User Responsibility for Content</h3>
+    <p>
+      Users are solely responsible for all content they submit. You agree not to
+      post harmful, illegal, defamatory, or harassing content. Any content you
+      read or receive is the opinion of the person who wrote it.
+    </p>
+
+    <h3>3. No Professional Advice</h3>
+    <p>
+      Content on the Service is not professional advice of any kind (medical,
+      legal, psychological, or otherwise) and should not be relied upon for
+      decisions requiring professional expertise.
+    </p>
+
+    <h3>4. Privacy &amp; Visibility</h3>
+    <p>
+      You control who can view your posts through your privacy settings. The
+      Service is not responsible for content shared outside the platform by other
+      users.
+    </p>
+
+    <h3>5. Limitation of Liability</h3>
+    <p>
+      To the maximum extent permitted by law, the Service and its owner are not
+      liable for user-generated content, emotional distress, disagreements, or
+      outcomes caused by posts. The Service is provided “as is” and “as
+      available,” with no guarantee of continuous access, security, or
+      error-free operation.
+    </p>
+
+    <h3>6. Age Requirement</h3>
+    <p>
+      You must be 16 years of age or older to use the Service.
+    </p>
+
+    <h3>7. Account &amp; Security</h3>
+    <p>
+      You are responsible for maintaining the confidentiality of your login
+      credentials. Unauthorized account use is not the responsibility of the
+      Service.
+    </p>
+
+    <h3>8. Changes to Terms</h3>
+    <p>
+      These Terms may be updated from time to time. Continued use of the Service
+      after changes are posted means you accept the updated Terms.
+    </p>
+
+    <h3>9. Agreement</h3>
+    <p>
+      By using the Service, you confirm that you have read and understood these
+      Terms and agree to be bound by them, and you waive any claim of liability
+      against the Service or its owner.
+    </p>
+  </section>
+
+  <!-- Delete account controls -->
+  <button id="delete-account" class="btn btn-outline" style="margin-top:1rem;">
+    Delete my account
+  </button>
+  <p id="delete-status" class="small-note"></p>
+
+  <!-- Terms &amp; Liability Modal -->
+  <div id="termsModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2>Terms of Use &amp; Liability Waiver</h2>
+
+      <div class="terms-box">
+        <p>Please read and accept the Terms before continuing.</p>
+        <p><a href="#terms">View full Terms</a></p>
+      </div>
+
+      <label style="display:block; margin-top:10px;">
+        <input type="checkbox" id="agreeCheckbox">
+        I have read and agree to the Terms.
+      </label>
+
+      <button id="agreeBtn" class="btn btn-primary" disabled>
+        Agree &amp; Continue
+      </button>
+    </div>
+  </div>
+
+  <!-- App script (after all HTML so elements exist) -->
   <script src="app.js"></script>
   <script>
     (adsbygoogle = window.adsbygoogle || []).push({});
   </script>
-  <section id="terms" class="terms-section">
-  <h2>Terms of Use & Liability Waiver</h2>
-  <p><strong>Last updated: December 2025</strong></p>
-
-  <p>
-    By using About Me – Hear It While You’re Here (“the Service”), you agree to
-    the following Terms of Use and Liability Waiver.
-  </p>
-
-  <h3>1. Purpose of the Service</h3>
-  <p>
-    The Service provides a platform where users may write and receive positive
-    messages, reflections, and “living eulogies.” The Service is for personal,
-    non-commercial use.
-  </p>
-
-  <h3>2. User Responsibility for Content</h3>
-  <p>
-    Users are solely responsible for all content they submit. You agree not to
-    post harmful, illegal, defamatory, or harassing content. Any content you
-    read or receive is the opinion of the person who wrote it.
-  </p>
-
-  <h3>3. No Professional Advice</h3>
-  <p>
-    Content on the Service is not professional advice of any kind (medical,
-    legal, psychological, or otherwise) and should not be relied upon for
-    decisions requiring professional expertise.
-  </p>
-
-  <h3>4. Privacy & Visibility</h3>
-  <p>
-    You control who can view your posts through your privacy settings. The
-    Service is not responsible for content shared outside the platform by other
-    users.
-  </p>
-
-  <h3>5. Limitation of Liability</h3>
-  <p>
-    To the maximum extent permitted by law, the Service and its owner are not
-    liable for user-generated content, emotional distress, disagreements, or
-    outcomes caused by posts. The Service is provided “as is” and “as
-    available,” with no guarantee of continuous access, security, or
-    error-free operation.
-  </p>
-
-  <h3>6. Age Requirement</h3>
-  <p>
-    You must be 16 years of age or older to use the Service.
-  </p>
-
-  <h3>7. Account & Security</h3>
-  <p>
-    You are responsible for maintaining the confidentiality of your login
-    credentials. Unauthorized account use is not the responsibility of the
-    Service.
-  </p>
-
-  <h3>8. Changes to Terms</h3>
-  <p>
-    These Terms may be updated from time to time. Continued use of the Service
-    after changes are posted means you accept the updated Terms.
-  </p>
-
-  <h3>9. Agreement</h3>
-  <p>
-    By using the Service, you confirm that you have read and understood these
-    Terms and agree to be bound by them, and you waive any claim of liability
-    against the Service or its owner.
-  </p>
-<button id="delete-account" class="btn btn-outline" style="margin-top:1rem;">
-  Delete my account
-</button>
-<p id="delete-status" class="small-note"></p>
-
-<footer style="text-align:center; margin-top:40px; padding:20px; font-size:0.9rem; color:#777;">
-  <a href="#terms" style="color:#777; text-decoration:none;">Terms of Use & Liability Waiver</a>
-</footer>
-
 </body>
-  <!-- Terms & Liability Modal -->
-<div id="termsModal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h2>Terms of Use & Liability Waiver</h2>
-
-    <div class="terms-box">
-      <p>Please read and accept the Terms before continuing.</p>
-      <p><a href="#terms">View full Terms</a></p>
-    </div>
-
-    <label style="display:block; margin-top:10px;">
-      <input type="checkbox" id="agreeCheckbox">
-      I have read and agree to the Terms.
-    </label>
-
-    <button id="agreeBtn" class="btn btn-primary" disabled>Agree & Continue</button>
-  </div>
-</div>
-
 </html>
-
