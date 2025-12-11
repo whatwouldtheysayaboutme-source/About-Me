@@ -487,14 +487,30 @@ app.post("/api/profile-photo", async (req, res) => {
 });
 
 // -----------------------------
-// FEEDBACK ENDPOINT
+// FEEDBACK ENDPOINT (with moderation)
 // -----------------------------
 app.post("/api/feedback", async (req, res) => {
   try {
     const { email, message } = req.body;
 
-    if (!message) {
+    if (!message || typeof message !== "string" || !message.trim()) {
       return res.json({ ok: false, error: "Missing message." });
+    }
+
+    if (containsProfanity(message)) {
+      return res.json({
+        ok: false,
+        error:
+          "Please keep feedback respectful. This looks like it contains offensive language.",
+      });
+    }
+
+    if (looksLikeSpam(message)) {
+      return res.json({
+        ok: false,
+        error:
+          "This feedback looks like spam. Please add more detail or context.",
+      });
     }
 
     console.log("Feedback received:", {
@@ -508,6 +524,7 @@ app.post("/api/feedback", async (req, res) => {
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
+
 // -----------------------------
 // LOOK UP USER BY NAME (for invites)
 // -----------------------------
