@@ -321,6 +321,18 @@
       <p id="write-to-line" class="small-note">
         If you followed a friend’s link, this is where you can write what they mean to you.
       </p>
+  <!-- Honeypot field to catch bots (humans never see this) -->
+  <div style="display:none;">
+    <label>
+      Leave this field empty
+      <input
+        type="text"
+        id="hp-field"
+        name="hp-field"
+        autocomplete="off"
+      />
+    </label>
+  </div>
 
       <!-- Who is writing the tribute -->
       <label
