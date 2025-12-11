@@ -22,6 +22,10 @@
     if (color) el.style.color = color;
   }
 
+  function getToken() {
+    return localStorage.getItem("aboutme_token") || null;
+  }
+
   // Footer year
   const yearSpan = document.getElementById("year");
   if (yearSpan) yearSpan.textContent = new Date().getFullYear();
@@ -33,25 +37,65 @@
     if (stored) currentUser = JSON.parse(stored);
   } catch {}
 
+  // If logged in, show greeting in header
   if (currentUser) {
     const authLink = document.querySelector('a[href="#auth"]');
-    if (authLink) {
+    if (authLink && currentUser.name) {
       authLink.textContent = `Hi, ${currentUser.name}`;
     }
   }
 
-  function getToken() {
-    return localStorage.getItem("aboutme_token") || null;
-  }
-
   // ---------------------------------------
-  // Update top-left site label
+  // Update top-left site label (if found)
   // ---------------------------------------
 
   const brandEl = document.querySelector(
     ".brand, #brand, header .logo, .site-title"
   );
   if (brandEl) brandEl.textContent = "What Would They Say About Me?";
+
+  // =======================================
+  // TERMS / WAIVER MODAL (APPLIES TO AUTH)
+  // =======================================
+
+  const termsModal = document.getElementById("termsModal");
+  const agreeCheckbox = document.getElementById("agreeCheckbox");
+  const agreeBtn = document.getElementById("agreeBtn");
+
+  let pendingAuthAction = null; // function to run after agreeing
+
+  function hasAcceptedTerms() {
+    return localStorage.getItem("termsAccepted") === "true";
+  }
+
+  function showTermsModalIfNeeded() {
+    if (!termsModal) return;
+    if (!hasAcceptedTerms()) {
+      termsModal.style.display = "flex";
+    }
+  }
+
+  if (agreeCheckbox && agreeBtn && termsModal) {
+    // Enable/disable Agree button based on checkbox
+    agreeCheckbox.addEventListener("change", () => {
+      agreeBtn.disabled = !agreeCheckbox.checked;
+    });
+
+    // When user clicks "Agree & Continue"
+    agreeBtn.addEventListener("click", () => {
+      if (!agreeCheckbox.checked) return;
+
+      localStorage.setItem("termsAccepted", "true");
+      termsModal.style.display = "none";
+
+      // Resume whatever auth action was blocked
+      if (pendingAuthAction) {
+        const action = pendingAuthAction;
+        pendingAuthAction = null;
+        action();
+      }
+    });
+  }
 
   // ---------------------------------------
   // Invite link generation
@@ -61,7 +105,7 @@
   // Prefill share-name with logged-in user's name if available
   if (shareNameInput && currentUser && currentUser.name) {
     shareNameInput.value = currentUser.name;
-    shareNameInput.readOnly = true; // prevents typing something random
+    shareNameInput.readOnly = true; // prevent changing it to something random
   }
 
   const shareGenerateBtn = document.getElementById("share-generate");
@@ -116,7 +160,7 @@
   }
 
   // ---------------------------------------
-  // Handle Invite Links
+  // Handle Invite Links (?to=...)
   // ---------------------------------------
 
   (function handleInviteOnLoad() {
@@ -147,6 +191,7 @@
   const tributeText = document.getElementById("tribute-text");
   const copyTributeBtn = document.getElementById("copy-tribute");
   const tributeStatus = document.getElementById("tribute-status");
+  const tributeFromInput = document.getElementById("tribute-from");
 
   if (copyTributeBtn && tributeText) {
     copyTributeBtn.addEventListener("click", async () => {
@@ -171,7 +216,6 @@
   // Save tribute  (POST /api/tributes)
   // ---------------------------------------
 
-  const tributeFromInput = document.getElementById("tribute-from");
   const saveTributeBtn = document.getElementById("save-tribute");
 
   if (saveTributeBtn && tributeText) {
@@ -220,88 +264,114 @@
   }
 
   // ---------------------------------------
-  // Signup
+  // Signup (gated by Terms)
   // ---------------------------------------
 
   const signupForm = document.getElementById("signup-form");
   if (signupForm) {
-    signupForm.addEventListener("submit", async (e) => {
+    signupForm.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      const name = document.getElementById("username").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-
-      const msg = document.getElementById("signup-message");
-
-      if (!name || !email || !password) {
-        setStatus(msg, "Please fill in all fields.", "salmon");
+      // If terms not accepted yet, show modal and remember this action
+      if (!hasAcceptedTerms()) {
+        pendingAuthAction = () => doSignup();
+        showTermsModalIfNeeded();
         return;
       }
 
-      try {
-        const res = await fetch(`${API_BASE}/api/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
-        });
-
-        const data = await safeJson(res);
-
-        if (data && data.ok) {
-          localStorage.setItem("aboutme_user", JSON.stringify(data.user));
-          localStorage.setItem("aboutme_token", data.token);
-          setStatus(msg, "Account created!", "lightgreen");
-          setTimeout(() => location.reload(), 600);
-        } else {
-          setStatus(msg, data.error || "Signup failed.", "salmon");
-        }
-      } catch {
-        setStatus(msg, "Server error.", "salmon");
-      }
+      doSignup();
     });
   }
 
+  async function doSignup() {
+    const nameEl = document.getElementById("username");
+    const emailEl = document.getElementById("email");
+    const passEl = document.getElementById("password");
+    const msg = document.getElementById("signup-message");
+
+    const name = nameEl ? nameEl.value.trim() : "";
+    const email = emailEl ? emailEl.value.trim() : "";
+    const password = passEl ? passEl.value : "";
+
+    if (!name || !email || !password) {
+      setStatus(msg, "Please fill in all fields.", "salmon");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await safeJson(res);
+
+      if (data && data.ok) {
+        localStorage.setItem("aboutme_user", JSON.stringify(data.user));
+        localStorage.setItem("aboutme_token", data.token);
+        setStatus(msg, "Account created!", "lightgreen");
+        setTimeout(() => location.reload(), 600);
+      } else {
+        setStatus(msg, (data && data.error) || "Signup failed.", "salmon");
+      }
+    } catch {
+      setStatus(document.getElementById("signup-message"), "Server error.", "salmon");
+    }
+  }
+
   // ---------------------------------------
-  // Login
+  // Login (gated by Terms)
   // ---------------------------------------
 
   const loginForm = document.getElementById("login-form");
   if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
+    loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      const email = document.getElementById("login-user").value.trim();
-      const password = document.getElementById("login-pass").value;
-
-      const msg = document.getElementById("login-message");
-
-      if (!email || !password) {
-        setStatus(msg, "Enter email and password.", "salmon");
+      if (!hasAcceptedTerms()) {
+        pendingAuthAction = () => doLogin();
+        showTermsModalIfNeeded();
         return;
       }
 
-      try {
-        const res = await fetch(`${API_BASE}/api/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-
-        const data = await safeJson(res);
-
-        if (data && data.ok) {
-          localStorage.setItem("aboutme_token", data.token);
-          localStorage.setItem("aboutme_user", JSON.stringify(data.user));
-          setStatus(msg, "Logged in!", "lightgreen");
-          setTimeout(() => location.reload(), 600);
-        } else {
-          setStatus(msg, data.error || "Login failed.", "salmon");
-        }
-      } catch {
-        setStatus(msg, "Server error.", "salmon");
-      }
+      doLogin();
     });
+  }
+
+  async function doLogin() {
+    const emailEl = document.getElementById("login-user");
+    const passEl = document.getElementById("login-pass");
+    const msg = document.getElementById("login-message");
+
+    const email = emailEl ? emailEl.value.trim() : "";
+    const password = passEl ? passEl.value : "";
+
+    if (!email || !password) {
+      setStatus(msg, "Enter email and password.", "salmon");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await safeJson(res);
+
+      if (data && data.ok) {
+        localStorage.setItem("aboutme_token", data.token);
+        localStorage.setItem("aboutme_user", JSON.stringify(data.user));
+        setStatus(msg, "Logged in!", "lightgreen");
+        setTimeout(() => location.reload(), 600);
+      } else {
+        setStatus(msg, (data && data.error) || "Login failed.", "salmon");
+      }
+    } catch {
+      setStatus(document.getElementById("login-message"), "Server error.", "salmon");
+    }
   }
 
   // ---------------------------------------
@@ -367,8 +437,8 @@
             t.fromName || "Someone who cares"
           }`;
 
-          const msgLine = document.createElement("p");
-          msgLine.textContent = t.message;
+          const msg = document.createElement("p");
+          msg.textContent = t.message;
 
           const meta = document.createElement("p");
           meta.className = "small-note";
@@ -376,7 +446,7 @@
             meta.textContent = new Date(t.createdAt).toLocaleString();
 
           card.appendChild(fromLine);
-          card.appendChild(msgLine);
+          card.appendChild(msg);
           if (meta.textContent) card.appendChild(meta);
 
           tributesListEl.appendChild(card);
@@ -393,6 +463,7 @@
   // ---------------------------------------
   // Simple feedback button (fb-*)
   // ---------------------------------------
+
   const fbEmail = document.getElementById("fb-email");
   const fbMessage = document.getElementById("fb-message");
   const fbSend = document.getElementById("fb-send");
@@ -400,8 +471,8 @@
 
   if (fbSend) {
     fbSend.addEventListener("click", async () => {
-      const email = fbEmail.value.trim();
-      const message = fbMessage.value.trim();
+      const email = fbEmail ? fbEmail.value.trim() : "";
+      const message = fbMessage ? fbMessage.value.trim() : "";
 
       if (!message) {
         fbStatus.textContent = "Please enter a message.";
@@ -416,14 +487,15 @@
           body: JSON.stringify({ email, message }),
         });
 
-        const data = await res.json();
+        const data = await safeJson(res);
 
-        if (data.ok) {
+        if (data && data.ok) {
           fbStatus.textContent = "Thanks for your feedback!";
           fbStatus.style.color = "lightgreen";
-          fbMessage.value = "";
+          if (fbMessage) fbMessage.value = "";
         } else {
-          fbStatus.textContent = data.error || "Error sending feedback.";
+          fbStatus.textContent =
+            (data && data.error) || "Error sending feedback.";
           fbStatus.style.color = "salmon";
         }
       } catch (err) {
@@ -434,7 +506,7 @@
   }
 
   // ---------------------------------------
-  // FEEDBACK FORM (Option 3) – if present
+  // Optional FEEDBACK FORM (feedback-form)
   // ---------------------------------------
 
   const feedbackForm = document.getElementById("feedback-form");
@@ -446,8 +518,8 @@
     feedbackForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const email = feedbackEmail.value.trim();
-      const message = feedbackMessage.value.trim();
+      const email = feedbackEmail ? feedbackEmail.value.trim() : "";
+      const message = feedbackMessage ? feedbackMessage.value.trim() : "";
 
       if (!email || !message) {
         setStatus(feedbackStatus, "Please fill in all fields.", "salmon");
@@ -474,12 +546,16 @@
         } else {
           setStatus(
             feedbackStatus,
-            data.error || "Could not send feedback.",
+            (data && data.error) || "Could not send feedback.",
             "salmon"
           );
         }
       } catch {
-        setStatus(feedbackStatus, "Server error. Try again later.", "salmon");
+        setStatus(
+          feedbackStatus,
+          "Server error. Try again later.",
+          "salmon"
+        );
       }
     });
   }
@@ -487,6 +563,7 @@
   // ---------------------------------------
   // DELETE ACCOUNT (frontend wiring)
   // ---------------------------------------
+
   const deleteBtn = document.getElementById("delete-account");
   const deleteStatus = document.getElementById("delete-status");
 
@@ -537,80 +614,27 @@
         if (deleteStatus) {
           deleteStatus.textContent = "Server error. Try again later.";
           deleteStatus.style.color = "salmon";
-          // =========================
-// ===== TERMS / WAIVER MODAL =====
-const termsModal = document.getElementById("termsModal");
-const agreeCheckbox = document.getElementById("agreeCheckbox");
-const agreeBtn = document.getElementById("agreeBtn");
-
-let pendingFormSubmit = null;
-
-function hasAcceptedTerms() {
-  return localStorage.getItem("termsAccepted") === "true";
-}
-
-function showTermsModalIfNeeded() {
-  if (!termsModal) return;
-  if (!hasAcceptedTerms()) {
-    termsModal.style.display = "flex"; // show the modal overlay
+        }
+      }
+    });
   }
-}
 
-if (agreeCheckbox && agreeBtn && termsModal) {
-  // Enable/disable button based on checkbox
-  agreeCheckbox.addEventListener("change", () => {
-    agreeBtn.disabled = !agreeCheckbox.checked;
-  });
+  // ---------------------------------------
+  // LOG OUT BUTTON
+  // ---------------------------------------
 
-  // When user agrees, remember it and resume any blocked form submit
-  agreeBtn.addEventListener("click", () => {
-    if (!agreeCheckbox.checked) return;
+  const logoutBtn = document.getElementById("logout");
 
-    localStorage.setItem("termsAccepted", "true");
-    termsModal.style.display = "none";
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      // Clear the keys this app actually uses
+      localStorage.removeItem("aboutme_user");
+      localStorage.removeItem("aboutme_token");
+      // (We intentionally keep termsAccepted so they don't have to re-agree)
+      window.location.reload();
+    });
+  }
 
-    if (pendingFormSubmit) {
-      const formToSubmit = pendingFormSubmit;
-      pendingFormSubmit = null;
-      // submit after modal hides
-      setTimeout(() => formToSubmit.submit(), 0);
-    }
-  });
-}
-// ===== LOGOUT BUTTON =====
-const logoutBtn = document.getElementById("logout");
-
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    // Clear likely auth-related keys without breaking other stuff
-    ["token", "authToken", "userId", "username", "currentUser"].forEach((key) =>
-      localStorage.removeItem(key)
-    );
-
-    // Reload so the user sees the logged-out state
-    window.location.reload();
-  });
-}
-
-// Gate signup & login behind the waiver
-const signupForm = document.getElementById("signup-form");
-const loginForm = document.getElementById("login-form");
-
-function attachTermsGate(form) {
-  if (!form) return;
-  form.addEventListener("submit", (e) => {
-    // If already accepted in this browser, let it proceed
-    if (hasAcceptedTerms()) return;
-
-    // Otherwise block submit and show the modal
-    e.preventDefault();
-    pendingFormSubmit = form;
-    showTermsModalIfNeeded();
-  });
-}
-
-attachTermsGate(signupForm);
-attachTermsGate(loginForm);
-
-// Also show it on very first visit if needed
-showTermsModalIfNeeded();
+  // If you ever want to auto-show the terms on first visit, you could do:
+  // if (!hasAcceptedTerms()) showTermsModalIfNeeded();
+})();
