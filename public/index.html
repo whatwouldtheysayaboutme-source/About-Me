@@ -220,6 +220,38 @@
         </ul>
       </div>
     </section>
+    <!-- =========================
+         OPTIONAL PROFILE PHOTO (LOCAL)
+    ========================== -->
+    <section id="profile-photo" class="section profile-section">
+      <h2>Your profile photo</h2>
+      <p class="small-note">
+        Add a photo URL for how you want to appear here. (For now, this is saved
+        only on this device.)
+      </p>
+
+      <label style="display:block; margin-top:0.75rem;">
+        Photo URL (optional)
+        <input
+          type="url"
+          id="profile-photo-url"
+          placeholder="https://example.com/you.jpg"
+        />
+      </label>
+
+      <button class="btn primary" id="profile-photo-save" style="margin-top:0.75rem;">
+        Save photo
+      </button>
+      <p id="profile-photo-status" class="small-note"></p>
+
+      <div
+        id="profile-photo-preview"
+        class="profile-photo-preview"
+        style="display:none;"
+      >
+        <img id="profile-photo-img" alt="Profile photo preview" />
+      </div>
+    </section>
 
     <!-- =========================
          STEP 2 – SHARE YOUR PAGE
