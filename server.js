@@ -276,6 +276,13 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/tributes", async (req, res) => {
   try {
     const { toName, fromName, message, isPublic, hpField } = req.body;
+    // Honeypot: if this field has anything, assume it's a bot and silently ignore
+    if (hpField && typeof hpField === "string" && hpField.trim() !== "") {
+      // Option 1: silently pretend it worked
+      return res.json({ ok: true });
+      // Option 2 (if you prefer to be explicit):
+      // return res.status(400).json({ ok: false, error: "Spam detected." });
+    }
 
     if (!message || typeof message !== "string" || !message.trim()) {
       return res
