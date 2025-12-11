@@ -7,6 +7,44 @@
   // ---------------------------------------
   // Helpers
   // ---------------------------------------
+  // ---------------------------------------
+  // Local-only profile photo
+  // ---------------------------------------
+
+  const PROFILE_PHOTO_KEY = "aboutme_profilePhotoUrl";
+
+  function loadProfilePhoto() {
+    try {
+      return localStorage.getItem(PROFILE_PHOTO_KEY) || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function saveProfilePhoto(url) {
+    try {
+      if (!url) {
+        localStorage.removeItem(PROFILE_PHOTO_KEY);
+      } else {
+        localStorage.setItem(PROFILE_PHOTO_KEY, url);
+      }
+    } catch {}
+  }
+
+  function updateProfilePhotoPreview(url) {
+    const preview = document.getElementById("profile-photo-preview");
+    const img = document.getElementById("profile-photo-img");
+    if (!preview || !img) return;
+
+    if (!url) {
+      preview.style.display = "none";
+      img.src = "";
+      return;
+    }
+
+    preview.style.display = "flex";
+    img.src = url;
+  }
 
   async function safeJson(res) {
     try {
