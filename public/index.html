@@ -346,7 +346,13 @@
           placeholder="How you want your name to appear"
         />
       </label>
-
+<!-- Honeypot field – humans won't see this, bots might fill it -->
+<div style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;">
+  <label>
+    Do not fill this field:
+    <input type="text" id="hp-field" name="hp-field" autocomplete="off" />
+  </label>
+</div>
       <textarea
   id="tribute-text"
   placeholder="Write what you would say in a eulogy – but while they’re still here."
