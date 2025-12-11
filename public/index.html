@@ -275,14 +275,25 @@
       </label>
 
       <textarea
-        id="tribute-text"
-        placeholder="Write what you would say in a eulogy – but while they’re still here."
-      ></textarea>
+  id="tribute-text"
+  placeholder="Write what you would say in a eulogy – but while they’re still here."
+></textarea>
 
-      <div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
-        <button class="btn primary" id="save-tribute">Save on About Me</button>
-        <button class="btn btn-outline" id="copy-tribute">Copy message</button>
-      </div>
+<label
+  class="small-note"
+  style="display:flex; align-items:center; gap:0.4rem; margin-top:0.5rem;"
+>
+  <input type="checkbox" id="tribute-public" checked />
+  Make this tribute public (it can appear on your page)
+</label>
+
+<div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+  <button class="btn primary" id="save-tribute">Save on About Me</button>
+  <button class="btn btn-outline" id="copy-tribute">Copy message</button>
+</div>
+
+<p id="tribute-status" class="small-note"></p>
+
 
       <p id="tribute-status" class="small-note"></p>
     </section>
