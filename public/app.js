@@ -220,7 +220,7 @@
   // Handle Invite Links (?to=...)
   // ---------------------------------------
 
-  (function handleInviteOnLoad() {
+   (function handleInviteOnLoad() {
     const params = new URLSearchParams(window.location.search);
     const to = params.get("to");
 
@@ -237,6 +237,31 @@
       writeToLine.textContent = `You’re writing a message for ${currentInviteName}. Share from the heart.`;
     }
 
+    const writeSection = document.getElementById("write");
+    if (writeSection) writeSection.scrollIntoView({ behavior: "smooth" });
+
+    // Try to load a profile photo for the person you’re writing about
+    (async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/user-by-name?name=${encodeURIComponent(
+            currentInviteName
+          )}`
+        );
+        const data = await safeJson(res);
+        if (!data || !data.ok || !data.user || !data.user.photoData) return;
+
+        const honoreeBox = document.getElementById("honoree-photo");
+        const honoreeImg = document.getElementById("honoree-photo-img");
+        if (honoreeBox && honoreeImg) {
+          honoreeBox.style.display = "flex";
+          honoreeImg.src = data.user.photoData;
+        }
+      } catch (err) {
+        console.error("Error loading honoree photo:", err);
+      }
+    })();
+  
     const writeSection = document.getElementById("write");
     if (writeSection) writeSection.scrollIntoView({ behavior: "smooth" });
   })();
