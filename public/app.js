@@ -537,6 +537,37 @@
         if (deleteStatus) {
           deleteStatus.textContent = "Server error. Try again later.";
           deleteStatus.style.color = "salmon";
+          // =========================
+// TERMS / WAIVER MODAL
+// =========================
+const termsModal = document.getElementById("termsModal");
+const agreeCheckbox = document.getElementById("agreeCheckbox");
+const agreeBtn = document.getElementById("agreeBtn");
+
+function showTermsModalIfNeeded() {
+  if (!termsModal) return;
+  const alreadyAgreed = localStorage.getItem("termsAccepted") === "true";
+  if (!alreadyAgreed) {
+    termsModal.style.display = "flex"; // show the modal overlay
+  }
+}
+
+if (agreeCheckbox && agreeBtn && termsModal) {
+  // Enable/disable button based on checkbox
+  agreeCheckbox.addEventListener("change", () => {
+    agreeBtn.disabled = !agreeCheckbox.checked;
+  });
+
+  // When user agrees, remember it and hide the modal
+  agreeBtn.addEventListener("click", () => {
+    localStorage.setItem("termsAccepted", "true");
+    termsModal.style.display = "none";
+  });
+}
+
+// Show it on first load if needed
+showTermsModalIfNeeded();
+
         }
       }
     });
