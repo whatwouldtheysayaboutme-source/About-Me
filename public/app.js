@@ -172,7 +172,7 @@
   const shareStatus = document.getElementById("share-status");
 const shareEmailInput = document.getElementById("share-email");
   
- if (shareGenerateBtn && shareNameInput) {
+if (shareGenerateBtn && shareNameInput) {
   shareGenerateBtn.addEventListener("click", () => {
     const name = shareNameInput.value.trim();
     const friendEmail = shareEmailInput ? shareEmailInput.value.trim() : "";
@@ -191,11 +191,41 @@ const shareEmailInput = document.getElementById("share-email");
     const base = window.location.origin + window.location.pathname;
     const url = `${base}?to=${encodeURIComponent(name)}#write`;
 
-    // Optional: still show the link for reference
+    // (Optional) still fill the hidden link field in case we ever want it
     if (shareUrlInput && shareResult) {
       shareUrlInput.value = url;
-      shareResult.style.display = "flex";
     }
+
+    // Build email subject & body
+    const subject = `You’ve been invited to write a message for ${name}`;
+    const body =
+      `Hi,\n\n` +
+      `I’ve created an "About Me – Hear It While You’re Here" page.\n` +
+      `Would you take a moment to share what I mean to you?\n\n` +
+      `Write your message here:\n${url}\n\n` +
+      `Thank you.`;
+
+    // Open user's email program with everything pre-filled
+    const mailtoUrl =
+      `mailto:${encodeURIComponent(friendEmail)}` +
+      `?subject=${encodeURIComponent(subject)}` +
+      `&body=${encodeURIComponent(body)}`;
+
+    window.location.href = mailtoUrl;
+
+    setStatus(
+      shareStatus,
+      "Email invitation opened — review it and press send.",
+      "lightgreen"
+    );
+
+    const writeToLine = document.getElementById("write-to-line");
+    if (writeToLine) {
+      writeToLine.textContent = `You’re writing a message for ${name}. Share from the heart.`;
+    }
+  });
+}
+
 
     // Build email subject & body
     const subject = `You’ve been invited to write a message for ${name}`;
