@@ -578,6 +578,23 @@ em.aboutme {
   padding: 10px;
   margin-bottom: 10px;
 }
+#feedback {
+  text-align: center;
+  max-width: 600px;
+  margin: 40px auto;
+}
+
+#feedback input,
+#feedback textarea {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 10px auto;
+  display: block;
+}
+
+#feedback button {
+  margin-top: 10px;
+}
 
   .auth-section {
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
