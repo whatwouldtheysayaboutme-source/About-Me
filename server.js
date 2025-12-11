@@ -275,7 +275,7 @@ app.post("/api/login", async (req, res) => {
 // -----------------------------
 app.post("/api/tributes", async (req, res) => {
   try {
-    const { toName, fromName, message, isPublic } = req.body;
+    const { toName, fromName, message, isPublic, hpField } = req.body;
 
     if (!message || typeof message !== "string" || !message.trim()) {
       return res
