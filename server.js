@@ -85,12 +85,14 @@ app.post("/api/register", async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const result = await users.insertOne({
-      name: name.trim(),
-      email: normalizedEmail,
-      passwordHash,
-      createdAt: new Date(),
-    });
+  const result = await users.insertOne({
+  name: name.trim(),
+  email: normalizedEmail,
+  passwordHash,
+  createdAt: new Date(),
+  photoData: null, // will hold their profile photo (data URL or URL)
+});
+
 
     const user = {
       id: result.insertedId,
