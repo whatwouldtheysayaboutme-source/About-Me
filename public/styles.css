@@ -530,6 +530,16 @@ em.aboutme {
     font-size: 2.5rem;
     max-width: 42rem;
   }
+
+  .auth-section {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+}
+
+/* ============================
+   TERMS SECTION + MODAL + FEEDBACK (GLOBAL)
+============================ */
+
 .terms-section {
   padding: 2rem 1rem;
   max-width: 900px;
@@ -547,6 +557,7 @@ em.aboutme {
   margin-top: 1rem;
   font-size: 1rem;
 }
+
 /* Modal overlay */
 .modal {
   position: fixed;
@@ -563,11 +574,12 @@ em.aboutme {
 
 /* Modal content box */
 .modal-content {
-  background: white;
+  background: #ffffff;
   padding: 20px;
   width: 90%;
   max-width: 500px;
   border-radius: 8px;
+  color: #000000; /* dark text on white box */
 }
 
 /* Scroll box for terms */
@@ -578,6 +590,8 @@ em.aboutme {
   padding: 10px;
   margin-bottom: 10px;
 }
+
+/* Feedback section */
 #feedback {
   text-align: center;
   max-width: 600px;
@@ -594,9 +608,4 @@ em.aboutme {
 
 #feedback button {
   margin-top: 10px;
-}
-
-  .auth-section {
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  }
 }
