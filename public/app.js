@@ -538,16 +538,20 @@
           deleteStatus.textContent = "Server error. Try again later.";
           deleteStatus.style.color = "salmon";
           // =========================
-// TERMS / WAIVER MODAL
-// =========================
+// ===== TERMS / WAIVER MODAL =====
 const termsModal = document.getElementById("termsModal");
 const agreeCheckbox = document.getElementById("agreeCheckbox");
 const agreeBtn = document.getElementById("agreeBtn");
 
+let pendingFormSubmit = null;
+
+function hasAcceptedTerms() {
+  return localStorage.getItem("termsAccepted") === "true";
+}
+
 function showTermsModalIfNeeded() {
   if (!termsModal) return;
-  const alreadyAgreed = localStorage.getItem("termsAccepted") === "true";
-  if (!alreadyAgreed) {
+  if (!hasAcceptedTerms()) {
     termsModal.style.display = "flex"; // show the modal overlay
   }
 }
@@ -558,18 +562,41 @@ if (agreeCheckbox && agreeBtn && termsModal) {
     agreeBtn.disabled = !agreeCheckbox.checked;
   });
 
-  // When user agrees, remember it and hide the modal
+  // When user agrees, remember it and resume any blocked form submit
   agreeBtn.addEventListener("click", () => {
+    if (!agreeCheckbox.checked) return;
+
     localStorage.setItem("termsAccepted", "true");
     termsModal.style.display = "none";
+
+    if (pendingFormSubmit) {
+      const formToSubmit = pendingFormSubmit;
+      pendingFormSubmit = null;
+      // submit after modal hides
+      setTimeout(() => formToSubmit.submit(), 0);
+    }
   });
 }
 
-// Show it on first load if needed
-showTermsModalIfNeeded();
+// Gate signup & login behind the waiver
+const signupForm = document.getElementById("signup-form");
+const loginForm = document.getElementById("login-form");
 
-        }
-      }
-    });
-  }
-})();
+function attachTermsGate(form) {
+  if (!form) return;
+  form.addEventListener("submit", (e) => {
+    // If already accepted in this browser, let it proceed
+    if (hasAcceptedTerms()) return;
+
+    // Otherwise block submit and show the modal
+    e.preventDefault();
+    pendingFormSubmit = form;
+    showTermsModalIfNeeded();
+  });
+}
+
+attachTermsGate(signupForm);
+attachTermsGate(loginForm);
+
+// Also show it on very first visit if needed
+showTermsModalIfNeeded();
