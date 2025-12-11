@@ -272,6 +272,7 @@
   const tributeStatus = document.getElementById("tribute-status");
   const tributeFromInput = document.getElementById("tribute-from");
   const tributePublicInput = document.getElementById("tribute-public");
+  const tributeHpField = document.getElementById("hp-field"); // honeypot
 
   if (copyTributeBtn && tributeText) {
     copyTributeBtn.addEventListener("click", async () => {
