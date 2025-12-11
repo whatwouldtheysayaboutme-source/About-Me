@@ -192,6 +192,7 @@
   const copyTributeBtn = document.getElementById("copy-tribute");
   const tributeStatus = document.getElementById("tribute-status");
   const tributeFromInput = document.getElementById("tribute-from");
+  const tributePublicInput = document.getElementById("tribute-public");
 
   if (copyTributeBtn && tributeText) {
     copyTributeBtn.addEventListener("click", async () => {
