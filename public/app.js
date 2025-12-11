@@ -7,21 +7,18 @@
   // ---------------------------------------
   // Helpers
   // ---------------------------------------
-  // ---------------------------------------
-  // Local-only profile photo
-  // ---------------------------------------
 
   const PROFILE_PHOTO_KEY = "aboutme_profilePhotoUrl";
 
   function loadProfilePhoto() {
     try {
       return localStorage.getItem(PROFILE_PHOTO_KEY) || "";
-    } catch {
+    } catch (err) {
       return "";
     }
   }
 
-   async function saveProfilePhoto(url) {
+  async function saveProfilePhoto(url) {
     // 1) Save locally so it loads fast on this device
     try {
       if (!url) {
@@ -29,7 +26,9 @@
       } else {
         localStorage.setItem(PROFILE_PHOTO_KEY, url);
       }
-    } catch {}
+    } catch (err) {
+      // ignore
+    }
 
     // 2) Also push to the backend so other people can see it
     try {
@@ -45,10 +44,9 @@
       }
     } catch (err) {
       console.error("Profile photo upload error:", err);
-      // We don't show an error to the user right now; local preview still works.
+      // Local preview still works.
     }
   }
-
 
   function updateProfilePhotoPreview(url) {
     const preview = document.getElementById("profile-photo-preview");
@@ -68,7 +66,7 @@
   async function safeJson(res) {
     try {
       return await res.json();
-    } catch {
+    } catch (err) {
       return null;
     }
   }
@@ -92,7 +90,9 @@
   try {
     const stored = localStorage.getItem("aboutme_user");
     if (stored) currentUser = JSON.parse(stored);
-  } catch {}
+  } catch (err) {
+    currentUser = null;
+  }
 
   // If logged in, show greeting in header
   if (currentUser) {
@@ -159,116 +159,29 @@
   // ---------------------------------------
 
   const shareNameInput = document.getElementById("share-name");
-  // Prefill share-name with logged-in user's name if available
   if (shareNameInput && currentUser && currentUser.name) {
     shareNameInput.value = currentUser.name;
-    shareNameInput.readOnly = true; // prevent changing it to something random
+    shareNameInput.readOnly = true;
   }
 
   const shareGenerateBtn = document.getElementById("share-generate");
-  const shareUrlInput = document.getElementById("share-url");
-  const shareResult = document.getElementById("share-result");
-  const shareCopyBtn = document.getElementById("share-copy");
   const shareStatus = document.getElementById("share-status");
-const shareEmailInput = document.getElementById("share-email");
-  
-if (shareGenerateBtn && shareNameInput) {
-  shareGenerateBtn.addEventListener("click", () => {
-    const name = shareNameInput.value.trim();
-    const friendEmail = shareEmailInput ? shareEmailInput.value.trim() : "";
 
-    if (!name) {
-      setStatus(shareStatus, "Please enter your name first.", "salmon");
-      return;
-    }
-
-    if (!friendEmail) {
-      setStatus(shareStatus, "Please enter your friend's email.", "salmon");
-      return;
-    }
-
-    // Build the invite link
-    const base = window.location.origin + window.location.pathname;
-    const url = `${base}?to=${encodeURIComponent(name)}#write`;
-
-    // (Optional) still fill the hidden link field in case we ever want it
-    if (shareUrlInput && shareResult) {
-      shareUrlInput.value = url;
-    }
-
-    // Build email subject & body
-    const subject = `You’ve been invited to write a message for ${name}`;
-    const body =
-      `Hi,\n\n` +
-      `I’ve created an "About Me – Hear It While You’re Here" page.\n` +
-      `Would you take a moment to share what I mean to you?\n\n` +
-      `Write your message here:\n${url}\n\n` +
-      `Thank you.`;
-
-    // Open user's email program with everything pre-filled
-    const mailtoUrl =
-      `mailto:${encodeURIComponent(friendEmail)}` +
-      `?subject=${encodeURIComponent(subject)}` +
-      `&body=${encodeURIComponent(body)}`;
-
-    window.location.href = mailtoUrl;
-
-    setStatus(
-      shareStatus,
-      "Email invitation opened — review it and press send.",
-      "lightgreen"
-    );
-
-    const writeToLine = document.getElementById("write-to-line");
-    if (writeToLine) {
-      writeToLine.textContent = `You’re writing a message for ${name}. Share from the heart.`;
-    }
-  });
-}
-
-
-    // Build email subject & body
-    const subject = `You’ve been invited to write a message for ${name}`;
-    const body =
-      `Hi,\n\n` +
-      `I’ve created an "About Me – Hear It While You’re Here" page.\n` +
-      `Would you take a moment to share what I mean to you?\n\n` +
-      `Write your message here:\n${url}\n\n` +
-      `Thank you.`;
-
-    // Open user's email app with the email pre-filled
-    const mailtoUrl =
-      `mailto:${encodeURIComponent(friendEmail)}` +
-      `?subject=${encodeURIComponent(subject)}` +
-      `&body=${encodeURIComponent(body)}`;
-
-    window.location.href = mailtoUrl;
-
-    setStatus(
-      shareStatus,
-      "Email invitation opened — review it and press send.",
-      "lightgreen"
-    );
-
-    const writeToLine = document.getElementById("write-to-line");
-    if (writeToLine) {
-      writeToLine.textContent = `You’re writing a message for ${name}. Share from the heart.`;
-    }
-  });
-}
-
+  if (shareGenerateBtn && shareNameInput) {
+    shareGenerateBtn.addEventListener("click", () => {
+      const name = shareNameInput.value.trim();
+      if (!name) {
+        setStatus(shareStatus, "Please enter your name first.", "salmon");
+        return;
+      }
 
       const base = window.location.origin + window.location.pathname;
       const url = `${base}?to=${encodeURIComponent(name)}#write`;
 
-      if (shareUrlInput && shareResult) {
-        shareUrlInput.value = url;
-        shareResult.style.display = "flex";
-      }
-
+      // For now: we still just generate the link; user sends it from email/text
       setStatus(
         shareStatus,
-        "Link created. Copy it and send it to friends or family.",
+        "Invitation link created. Copy it and send it to friends or family.",
         "lightgreen"
       );
 
@@ -276,22 +189,8 @@ if (shareGenerateBtn && shareNameInput) {
       if (writeToLine) {
         writeToLine.textContent = `You’re writing a message for ${name}. Share from the heart.`;
       }
-    });
-  }
 
-  if (shareCopyBtn && shareUrlInput) {
-    shareCopyBtn.addEventListener("click", async () => {
-      const text = shareUrlInput.value;
-      if (!text) return;
-
-      try {
-        await navigator.clipboard.writeText(text);
-        setStatus(shareStatus, "Link copied to clipboard.", "lightgreen");
-      } catch {
-        shareUrlInput.select();
-        document.execCommand("copy");
-        setStatus(shareStatus, "Link copied.", "lightgreen");
-      }
+      console.log("Invite link:", url);
     });
   }
 
@@ -299,48 +198,48 @@ if (shareGenerateBtn && shareNameInput) {
   // Handle Invite Links (?to=...)
   // ---------------------------------------
 
- (function handleInviteOnLoad() {
-  const params = new URLSearchParams(window.location.search);
-  const to = params.get("to");
+  (function handleInviteOnLoad() {
+    const params = new URLSearchParams(window.location.search);
+    const to = params.get("to");
 
-  if (!to) return;
-  currentInviteName = decodeURIComponent(to);
+    if (!to) return;
+    currentInviteName = decodeURIComponent(to);
 
-  const banner = document.getElementById("invite-banner");
-  const writeToLine = document.getElementById("write-to-line");
-  if (banner) {
-    banner.style.display = "block";
-    banner.textContent = `You’ve been invited to write a message for ${currentInviteName}. Scroll down to share what they mean to you.`;
-  }
-  if (writeToLine) {
-    writeToLine.textContent = `You’re writing a message for ${currentInviteName}. Share from the heart.`;
-  }
-
-  const writeSection = document.getElementById("write");
-  if (writeSection) writeSection.scrollIntoView({ behavior: "smooth" });
-
-  // Try to load a profile photo for the person you’re writing about
-  (async () => {
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/user-by-name?name=${encodeURIComponent(
-          currentInviteName
-        )}`
-      );
-      const data = await safeJson(res);
-      if (!data || !data.ok || !data.user || !data.user.photoData) return;
-
-      const honoreeBox = document.getElementById("honoree-photo");
-      const honoreeImg = document.getElementById("honoree-photo-img");
-      if (honoreeBox && honoreeImg) {
-        honoreeBox.style.display = "flex";
-        honoreeImg.src = data.user.photoData;
-      }
-    } catch (err) {
-      console.error("Error loading honoree photo:", err);
+    const banner = document.getElementById("invite-banner");
+    const writeToLine = document.getElementById("write-to-line");
+    if (banner) {
+      banner.style.display = "block";
+      banner.textContent = `You’ve been invited to write a message for ${currentInviteName}. Scroll down to share what they mean to you.`;
     }
+    if (writeToLine) {
+      writeToLine.textContent = `You’re writing a message for ${currentInviteName}. Share from the heart.`;
+    }
+
+    const writeSection = document.getElementById("write");
+    if (writeSection) writeSection.scrollIntoView({ behavior: "smooth" });
+
+    // Try to load a profile photo for the person you’re writing about
+    (async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/user-by-name?name=${encodeURIComponent(
+            currentInviteName
+          )}`
+        );
+        const data = await safeJson(res);
+        if (!data || !data.ok || !data.user || !data.user.photoData) return;
+
+        const honoreeBox = document.getElementById("honoree-photo");
+        const honoreeImg = document.getElementById("honoree-photo-img");
+        if (honoreeBox && honoreeImg) {
+          honoreeBox.style.display = "flex";
+          honoreeImg.src = data.user.photoData;
+        }
+      } catch (err) {
+        console.error("Error loading honoree photo:", err);
+      }
+    })();
   })();
-})();
 
   // ---------------------------------------
   // Copy tribute message
@@ -364,7 +263,7 @@ if (shareGenerateBtn && shareNameInput) {
       try {
         await navigator.clipboard.writeText(text);
         setStatus(tributeStatus, "Message copied to clipboard.", "lightgreen");
-      } catch {
+      } catch (err) {
         tributeText.select();
         document.execCommand("copy");
         setStatus(tributeStatus, "Message copied.", "lightgreen");
@@ -372,11 +271,11 @@ if (shareGenerateBtn && shareNameInput) {
     });
   }
 
-   // ---------------------------------------
+  // ---------------------------------------
   // Save tribute  (POST /api/tributes)
   // ---------------------------------------
 
-   const saveTributeBtn = document.getElementById("save-tribute");
+  const saveTributeBtn = document.getElementById("save-tribute");
 
   if (saveTributeBtn && tributeText) {
     saveTributeBtn.addEventListener("click", async () => {
@@ -384,9 +283,7 @@ if (shareGenerateBtn && shareNameInput) {
       const fromName = tributeFromInput ? tributeFromInput.value.trim() : "";
       const honeypotValue = tributeHpField ? tributeHpField.value.trim() : "";
 
-      // If the honeypot has anything in it, assume it's a bot and bail out
       if (honeypotValue) {
-        // Optional: don't tell them why, just give a generic message
         setStatus(
           tributeStatus,
           "Something went wrong. Please try again.",
@@ -415,10 +312,9 @@ if (shareGenerateBtn && shareNameInput) {
             fromName,
             message,
             isPublic,
-            hpField: honeypotValue, // send honeypot to backend too
+            hpField: honeypotValue,
           }),
         });
-
 
         const data = await safeJson(res);
 
@@ -439,7 +335,6 @@ if (shareGenerateBtn && shareNameInput) {
     });
   }
 
-
   // ---------------------------------------
   // Signup (gated by Terms)
   // ---------------------------------------
@@ -449,7 +344,6 @@ if (shareGenerateBtn && shareNameInput) {
     signupForm.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      // If terms not accepted yet, show modal and remember this action
       if (!hasAcceptedTerms()) {
         pendingAuthAction = () => doSignup();
         showTermsModalIfNeeded();
@@ -492,8 +386,12 @@ if (shareGenerateBtn && shareNameInput) {
       } else {
         setStatus(msg, (data && data.error) || "Signup failed.", "salmon");
       }
-    } catch {
-      setStatus(document.getElementById("signup-message"), "Server error.", "salmon");
+    } catch (err) {
+      setStatus(
+        document.getElementById("signup-message"),
+        "Server error.",
+        "salmon"
+      );
     }
   }
 
@@ -546,8 +444,12 @@ if (shareGenerateBtn && shareNameInput) {
       } else {
         setStatus(msg, (data && data.error) || "Login failed.", "salmon");
       }
-    } catch {
-      setStatus(document.getElementById("login-message"), "Server error.", "salmon");
+    } catch (err) {
+      setStatus(
+        document.getElementById("login-message"),
+        "Server error.",
+        "salmon"
+      );
     }
   }
 
@@ -605,39 +507,37 @@ if (shareGenerateBtn && shareNameInput) {
           return;
         }
 
-      tributes.forEach((t) => {
-  const card = document.createElement("article");
-  card.className = "tribute-card";
+        tributes.forEach((t) => {
+          const card = document.createElement("article");
+          card.className = "tribute-card";
 
-  const fromLine = document.createElement("p");
-  fromLine.innerHTML = `<strong>From:</strong> ${
-    t.fromName || "Someone who cares"
-  }`;
+          const fromLine = document.createElement("p");
+          fromLine.innerHTML = `<strong>From:</strong> ${
+            t.fromName || "Someone who cares"
+          }`;
 
-  const msg = document.createElement("p");
-  msg.textContent = t.message;
+          const msg = document.createElement("p");
+          msg.textContent = t.message;
 
-  const meta = document.createElement("p");
-  meta.className = "small-note";
-  if (t.createdAt) {
-    meta.textContent = new Date(t.createdAt).toLocaleString();
-  }
+          const meta = document.createElement("p");
+          meta.className = "small-note";
+          if (t.createdAt) {
+            meta.textContent = new Date(t.createdAt).toLocaleString();
+          }
 
-  // Privacy label
-  if (t.isPublic === false) {
-    const privacy = document.createElement("p");
-    privacy.className = "small-note";
-    privacy.textContent = "Private tribute (only visible to you)";
-    card.appendChild(privacy);
-  }
+          if (t.isPublic === false) {
+            const privacy = document.createElement("p");
+            privacy.className = "small-note";
+            privacy.textContent = "Private tribute (only visible to you)";
+            card.appendChild(privacy);
+          }
 
-  card.appendChild(fromLine);
-  card.appendChild(msg);
-  if (meta.textContent) card.appendChild(meta);
+          card.appendChild(fromLine);
+          card.appendChild(msg);
+          if (meta.textContent) card.appendChild(meta);
 
-  tributesListEl.appendChild(card);
-});
-
+          tributesListEl.appendChild(card);
+        });
       } catch (err) {
         console.error(err);
         tributesLoading.style.display = "none";
@@ -737,7 +637,7 @@ if (shareGenerateBtn && shareNameInput) {
             "salmon"
           );
         }
-      } catch {
+      } catch (err) {
         setStatus(
           feedbackStatus,
           "Server error. Try again later.",
@@ -805,8 +705,9 @@ if (shareGenerateBtn && shareNameInput) {
       }
     });
   }
-    // ---------------------------------------
-  // PROFILE PHOTO (local-only)
+
+  // ---------------------------------------
+  // PROFILE PHOTO (local + backend)
   // ---------------------------------------
 
   const photoInput = document.getElementById("profile-photo-url");
@@ -814,16 +715,15 @@ if (shareGenerateBtn && shareNameInput) {
   const photoSaveBtn = document.getElementById("profile-photo-save");
   const photoStatus = document.getElementById("profile-photo-status");
 
-  // Load any existing photo on page load
   const existingPhoto = loadProfilePhoto();
   if (existingPhoto) {
-    if (photoInput) photoInput.value = existingPhoto.startsWith("data:")
-      ? ""
-      : existingPhoto; // if it's a URL, show it; if it's a data URL, leave field blank
+    if (photoInput)
+      photoInput.value = existingPhoto.startsWith("data:")
+        ? ""
+        : existingPhoto;
     updateProfilePhotoPreview(existingPhoto);
   }
 
-  // Handle file upload
   if (photoFileInput) {
     photoFileInput.addEventListener("change", () => {
       const file = photoFileInput.files && photoFileInput.files[0];
@@ -850,7 +750,6 @@ if (shareGenerateBtn && shareNameInput) {
     });
   }
 
-  // Handle manual URL save
   if (photoSaveBtn && photoInput) {
     photoSaveBtn.addEventListener("click", () => {
       const url = photoInput.value.trim();
@@ -876,14 +775,9 @@ if (shareGenerateBtn && shareNameInput) {
 
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
-      // Clear the keys this app actually uses
       localStorage.removeItem("aboutme_user");
       localStorage.removeItem("aboutme_token");
-      // (We intentionally keep termsAccepted so they don't have to re-agree)
       window.location.reload();
     });
   }
-
-  // If you ever want to auto-show the terms on first visit, you could do:
-  // if (!hasAcceptedTerms()) showTermsModalIfNeeded();
 })();
