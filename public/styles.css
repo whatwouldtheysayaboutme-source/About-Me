@@ -610,6 +610,29 @@ em.aboutme {
   margin-top: 10px;
 }
 /* ============================
+   PROFILE PHOTO PREVIEW
+============================ */
+
+.profile-section {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.profile-photo-preview {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-photo-preview img {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid #38bdf8;
+}
+
+/* ============================
    ACCOUNT ACTIONS (FOOTER)
 ============================ */
 
