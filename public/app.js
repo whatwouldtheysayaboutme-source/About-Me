@@ -217,21 +217,9 @@
   // Save tribute  (POST /api/tributes)
   // ---------------------------------------
 
-  const saveTributeBtn = document.getElementById("save-tribute");
+         const isPublic =
+          tributePublicInput ? !!tributePublicInput.checked : true;
 
-  if (saveTributeBtn && tributeText) {
-    saveTributeBtn.addEventListener("click", async () => {
-      const message = tributeText.value.trim();
-      const fromName = tributeFromInput ? tributeFromInput.value.trim() : "";
-
-      if (!message) {
-        setStatus(tributeStatus, "Write a message before saving.", "salmon");
-        return;
-      }
-
-      const token = getToken();
-
-      try {
         const res = await fetch(`${API_BASE}/api/tributes`, {
           method: "POST",
           headers: {
@@ -242,6 +230,7 @@
             toName: currentInviteName,
             fromName,
             message,
+            isPublic,
           }),
         });
 
