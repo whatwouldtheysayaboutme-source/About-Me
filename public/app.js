@@ -656,6 +656,37 @@
       }
     });
   }
+  // ---------------------------------------
+  // PROFILE PHOTO (local-only)
+  // ---------------------------------------
+
+  const photoInput = document.getElementById("profile-photo-url");
+  const photoSaveBtn = document.getElementById("profile-photo-save");
+  const photoStatus = document.getElementById("profile-photo-status");
+
+  // Load any existing photo on page load
+  const existingPhoto = loadProfilePhoto();
+  if (photoInput && existingPhoto) {
+    photoInput.value = existingPhoto;
+    updateProfilePhotoPreview(existingPhoto);
+  }
+
+  if (photoSaveBtn && photoInput) {
+    photoSaveBtn.addEventListener("click", () => {
+      const url = photoInput.value.trim();
+
+      if (!url) {
+        saveProfilePhoto("");
+        updateProfilePhotoPreview("");
+        setStatus(photoStatus, "Photo cleared.", "lightgreen");
+        return;
+      }
+
+      saveProfilePhoto(url);
+      updateProfilePhotoPreview(url);
+      setStatus(photoStatus, "Photo saved on this device.", "lightgreen");
+    });
+  }
 
   // ---------------------------------------
   // LOG OUT BUTTON
