@@ -1,4 +1,6 @@
 // server.js
+"use strict";
+
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
@@ -6,25 +8,33 @@ const { MongoClient, ObjectId } = require("mongodb");
 const bcrypt = require("bcryptjs");
 const sgMail = require("@sendgrid/mail");
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-} else {
-  console.warn("WARNING: SENDGRID_API_KEY not set. Invite emails will not send.");
-}
+// -----------------------------
+// APP INIT (MUST COME BEFORE app.use)
+// -----------------------------
+const app = express();
 
 // -----------------------------
 // CONFIG
 // -----------------------------
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "2mb" })); // bump if you store large base64 photos
 app.use(express.static(path.join(__dirname, "public")));
 
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
+const FROM_EMAIL = process.env.FROM_EMAIL || "";
 
 if (!MONGODB_URI) {
   console.error("ERROR: MONGODB_URI is not set in environment variables.");
   process.exit(1);
+}
+
+// SendGrid is optional (won't crash if missing)
+const HAS_SENDGRID = !!process.env.SENDGRID_API_KEY;
+if (HAS_SENDGRID) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+} else {
+  console.warn("WARNING: SENDGRID_API_KEY not set. Invite emails will not send.");
 }
 
 let db;
@@ -32,9 +42,6 @@ let db;
 // -----------------------------
 // MODERATION HELPERS
 // -----------------------------
-
-// A moderate profanity list (not exhaustive, but solid for v1)
-// You can add/remove words as you choose.
 const PROFANITY_LIST = [
   "fuck",
   "fck",
@@ -62,67 +69,48 @@ const PROFANITY_LIST = [
   "goddamn",
 ];
 
-// Loosen up the text so f@ck, f*ck, f u c k all normalize to "fuck".
 function normalizeForProfanity(text) {
   if (!text || typeof text !== "string") return "";
-
   return text
     .toLowerCase()
-    .replace(/[@$!1\|\*]/g, "i")   // @, $, !, 1, |, * → i-ish
-    .replace(/0/g, "o")           // 0 → o
-    .replace(/3/g, "e")           // 3 → e
-    .replace(/4/g, "a")           // 4 → a
-    .replace(/5/g, "s")           // 5 → s
-    .replace(/[^a-z0-9\s]/g, " ") // strip other symbols
-    .replace(/\s+/g, " ");        // collapse spaces
+    .replace(/[@$!1\|\*]/g, "i")
+    .replace(/0/g, "o")
+    .replace(/3/g, "e")
+    .replace(/4/g, "a")
+    .replace(/5/g, "s")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function containsProfanity(text) {
   const normalized = normalizeForProfanity(text);
   if (!normalized) return false;
 
-  // Simple word-based check
   const words = normalized.split(" ");
   for (const w of words) {
-    if (!w) continue;
-    if (PROFANITY_LIST.includes(w)) {
-      return true;
-    }
+    if (w && PROFANITY_LIST.includes(w)) return true;
   }
 
-  // Also check substrings for some strong words
   for (const bad of PROFANITY_LIST) {
-    if (normalized.includes(bad)) {
-      return true;
-    }
+    if (normalized.includes(bad)) return true;
   }
 
   return false;
 }
 
-// Very basic spam checks
 function looksLikeSpam(message) {
   if (!message || typeof message !== "string") return true;
   const text = message.trim();
 
-  // Too short to be meaningful
   if (text.length < 5) return true;
-
-  // Very long = suspicious (simple upper bound)
   if (text.length > 5000) return true;
 
-  // Same character repeated too much: "aaaaaa", "!!!!!!!", etc.
-  if (/^(.)\1{9,}$/.test(text.replace(/\s/g, ""))) {
-    return true;
-  }
+  if (/^(.)\1{9,}$/.test(text.replace(/\s/g, ""))) return true;
 
-  // Too many URLs
   const urlMatches = text.match(/https?:\/\/[^\s]+/gi);
-  if (urlMatches && urlMatches.length > 3) {
-    return true;
-  }
+  if (urlMatches && urlMatches.length > 3) return true;
 
-  // One word repeated over and over
   const words = text
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
@@ -131,17 +119,18 @@ function looksLikeSpam(message) {
 
   if (words.length > 10) {
     const counts = {};
-    for (const w of words) {
-      counts[w] = (counts[w] || 0) + 1;
-    }
+    for (const w of words) counts[w] = (counts[w] || 0) + 1;
     const maxCount = Math.max(...Object.values(counts));
-    // if one word is > 70% of the message, it's probably spammy
     if (maxCount / words.length > 0.7) return true;
   }
 
   return false;
 }
 
+function isValidEmail(email) {
+  if (!email || typeof email !== "string") return false;
+  return /^\S+@\S+\.\S+$/.test(email.trim());
+}
 
 // -----------------------------
 // CONNECT TO MONGODB
@@ -193,35 +182,26 @@ app.post("/api/register", async (req, res) => {
     }
 
     const users = db.collection("users");
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = String(email).toLowerCase().trim();
 
     const existing = await users.findOne({ email: normalizedEmail });
     if (existing) {
-      return res
-        .status(409)
-        .json({ ok: false, error: "Email already registered." });
+      return res.status(409).json({ ok: false, error: "Email already registered." });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-  const result = await users.insertOne({
-  name: name.trim(),
-  email: normalizedEmail,
-  passwordHash,
-  createdAt: new Date(),
-  photoData: null, // will hold their profile photo (data URL or URL)
-});
-
-
-    const user = {
-      id: result.insertedId,
-      name: name.trim(),
+    const result = await users.insertOne({
+      name: String(name).trim(),
       email: normalizedEmail,
-    };
+      passwordHash,
+      createdAt: new Date(),
+      photoData: null,
+    });
 
     return res.json({
       ok: true,
-      user,
+      user: { id: result.insertedId, name: String(name).trim(), email: normalizedEmail },
       token: "devtoken-" + result.insertedId,
     });
   } catch (err) {
@@ -238,35 +218,25 @@ app.post("/api/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ ok: false, error: "Email and password required." });
+      return res.status(400).json({ ok: false, error: "Email and password required." });
     }
 
     const users = db.collection("users");
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = String(email).toLowerCase().trim();
 
     const user = await users.findOne({ email: normalizedEmail });
     if (!user) {
-      return res
-        .status(401)
-        .json({ ok: false, error: "Invalid email or password." });
+      return res.status(401).json({ ok: false, error: "Invalid email or password." });
     }
 
     const matches = await bcrypt.compare(password, user.passwordHash);
     if (!matches) {
-      return res
-        .status(401)
-        .json({ ok: false, error: "Invalid email or password." });
+      return res.status(401).json({ ok: false, error: "Invalid email or password." });
     }
 
     return res.json({
       ok: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
+      user: { id: user._id, name: user.name, email: user.email },
       token: "devtoken-" + user._id,
     });
   } catch (err) {
@@ -276,73 +246,59 @@ app.post("/api/login", async (req, res) => {
 });
 
 // -----------------------------
-// SAVE TRIBUTE  (stores isPublic + moderation)
+// SAVE TRIBUTE (stores isPublic + moderation)
 // -----------------------------
 app.post("/api/tributes", async (req, res) => {
   try {
     const { toName, fromName, message, isPublic, hpField } = req.body;
-    // Honeypot: if this field has anything, assume it's a bot and silently ignore
+
+    // Honeypot
     if (hpField && typeof hpField === "string" && hpField.trim() !== "") {
-      // Option 1: silently pretend it worked
       return res.json({ ok: true });
-      // Option 2 (if you prefer to be explicit):
-      // return res.status(400).json({ ok: false, error: "Spam detected." });
     }
 
     if (!message || typeof message !== "string" || !message.trim()) {
-      return res
-        .status(400)
-        .json({ ok: false, error: "Message is required." });
+      return res.status(400).json({ ok: false, error: "Message is required." });
     }
 
-    // Spam / abuse checks
     if (containsProfanity(message)) {
       return res.status(400).json({
         ok: false,
-        error:
-          "This message looks like it contains offensive language. Please rephrase it in a positive, respectful way.",
+        error: "This message looks like it contains offensive language. Please rephrase it in a positive, respectful way.",
       });
     }
 
     if (looksLikeSpam(message)) {
       return res.status(400).json({
         ok: false,
-        error:
-          "This message looks like spam or very low-quality text. Please write something more meaningful.",
+        error: "This message looks like spam or very low-quality text. Please write something more meaningful.",
       });
     }
 
     const tributes = db.collection("tributes");
     const users = db.collection("users");
 
-    const cleanedToName =
-      toName && typeof toName === "string" ? toName.trim() : null;
+    const cleanedToName = toName && typeof toName === "string" ? toName.trim() : null;
     const cleanedFromName =
       fromName && typeof fromName === "string" ? fromName.trim() : null;
 
-    // Normalize isPublic: default true unless explicitly false
     let isPublicFlag = true;
-    if (typeof isPublic === "boolean") {
-      isPublicFlag = isPublic;
-    }
+    if (typeof isPublic === "boolean") isPublicFlag = isPublic;
 
-    // Try to find a user whose name matches toName
     let recipientId = null;
     if (cleanedToName) {
       const recipient = await users.findOne({ name: cleanedToName });
       if (recipient) recipientId = recipient._id;
     }
 
-    const doc = {
+    await tributes.insertOne({
       toName: cleanedToName,
       fromName: cleanedFromName,
       message: message.trim(),
       recipientId: recipientId || null,
       isPublic: isPublicFlag,
       createdAt: new Date(),
-    };
-
-    await tributes.insertOne(doc);
+    });
 
     return res.json({ ok: true });
   } catch (err) {
@@ -351,40 +307,29 @@ app.post("/api/tributes", async (req, res) => {
   }
 });
 
-
 // -----------------------------
-// LIST TRIBUTES FOR LOGGED-IN USER
-// (shows BOTH public & private tributes)
+// LIST TRIBUTES FOR LOGGED-IN USER (public + private)
 // -----------------------------
 app.get("/api/my-tributes", async (req, res) => {
   try {
     const userId = req.query.userId;
-
     if (!userId) {
-      return res
-        .status(400)
-        .json({ ok: false, error: "Missing userId in query string." });
+      return res.status(400).json({ ok: false, error: "Missing userId in query string." });
     }
 
     const users = db.collection("users");
     let user;
-
     try {
       user = await users.findOne({ _id: new ObjectId(userId) });
-    } catch (err) {
+    } catch {
       return res.status(400).json({ ok: false, error: "Invalid userId." });
     }
 
-    if (!user) {
-      return res.status(404).json({ ok: false, error: "User not found." });
-    }
+    if (!user) return res.status(404).json({ ok: false, error: "User not found." });
 
     const tributes = db.collection("tributes");
-
     const results = await tributes
-      .find({
-        $or: [{ recipientId: user._id }, { toName: user.name }],
-      })
+      .find({ $or: [{ recipientId: user._id }, { toName: user.name }] })
       .sort({ createdAt: -1 })
       .limit(50)
       .toArray();
@@ -397,215 +342,5 @@ app.get("/api/my-tributes", async (req, res) => {
 });
 
 // -----------------------------
-// GENERIC LIST TRIBUTES (by ?to=Name)
-// Only returns PUBLIC tributes
-// -----------------------------
-app.get("/api/tributes", async (req, res) => {
-  try {
-    const { to } = req.query;
-    const tributes = db.collection("tributes");
-
-    const query = {};
-
-    if (to && typeof to === "string") {
-      query.toName = to.trim();
-    }
-
-    // Only show public tributes when listing generically
-    // (treat docs with no isPublic as public for backward compatibility)
-    query.isPublic = { $ne: false };
-
-    const items = await tributes
-      .find(query)
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .toArray();
-
-    return res.json({ ok: true, tributes: items });
-  } catch (err) {
-    console.error("/api/tributes GET error:", err);
-    return res.status(500).json({ ok: false, error: "Server error" });
-  }
-});
-
-// -----------------------------
-// DELETE ACCOUNT
-// -----------------------------
-app.delete("/api/account", async (req, res) => {
-  try {
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ ok: false, error: "Missing userId." });
-    }
-
-    const users = db.collection("users");
-    const tributes = db.collection("tributes");
-
-    let user;
-    try {
-      user = await users.findOne({ _id: new ObjectId(userId) });
-    } catch (err) {
-      return res.status(400).json({ ok: false, error: "Invalid userId." });
-    }
-
-    if (!user) {
-      return res.status(404).json({ ok: false, error: "User not found." });
-    }
-
-    await tributes.deleteMany({
-      $or: [{ recipientId: user._id }, { toName: user.name }],
-    });
-
-    await users.deleteOne({ _id: user._id });
-
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error("/api/account DELETE error:", err);
-    return res.status(500).json({ ok: false, error: "Server error" });
-  }
-});
-// -----------------------------
-// UPDATE PROFILE PHOTO
-// -----------------------------
-app.post("/api/profile-photo", async (req, res) => {
-  try {
-    const { userId, photoData } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ ok: false, error: "Missing userId." });
-    }
-
-    const users = db.collection("users");
-
-    let userObjectId;
-    try {
-      userObjectId = new ObjectId(userId);
-    } catch (err) {
-      return res.status(400).json({ ok: false, error: "Invalid userId." });
-    }
-
-    // photoData can be a data URL (from uploaded file) or a normal URL
-    await users.updateOne(
-      { _id: userObjectId },
-      { $set: { photoData: photoData || null } }
-    );
-
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error("/api/profile-photo error:", err);
-    return res.status(500).json({ ok: false, error: "Server error" });
-  }
-});
-
-// -----------------------------
-// FEEDBACK ENDPOINT (with moderation)
-// -----------------------------
-app.post("/api/feedback", async (req, res) => {
-  try {
-    const { email, message } = req.body;
-
-    if (!message || typeof message !== "string" || !message.trim()) {
-      return res.json({ ok: false, error: "Missing message." });
-    }
-
-    if (containsProfanity(message)) {
-      return res.json({
-        ok: false,
-        error:
-          "Please keep feedback respectful. This looks like it contains offensive language.",
-      });
-    }
-
-    if (looksLikeSpam(message)) {
-      return res.json({
-        ok: false,
-        error:
-          "This feedback looks like spam. Please add more detail or context.",
-      });
-    }
-
-    console.log("Feedback received:", {
-      email: email || "(no email)",
-      message,
-    });
-
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error("/api/feedback error:", err);
-    return res.status(500).json({ ok: false, error: "Server error" });
-  }
-});
-
-// -----------------------------
-// LOOK UP USER BY NAME (for invites)
-// -----------------------------
-app.get("/api/user-by-name", async (req, res) => {
-  try {
-    const { name } = req.query;
-
-    if (!name || typeof name !== "string") {
-      return res.status(400).json({ ok: false, error: "Missing name." });
-    }
-
-    const users = db.collection("users");
-    const user = await users.findOne({ name: name.trim() });
-
-    if (!user) {
-      return res.json({ ok: true, user: null });
-    }
-
-    return res.json({
-      ok: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        photoData: user.photoData || null,
-      },
-    });
-  } catch (err) {
-    console.error("/api/user-by-name error:", err);
-    return res.status(500).json({ ok: false, error: "Server error" });
-  }
-});
-// -----------------------------
-// SEND INVITE EMAIL (simple v1)
-// -----------------------------
-app.post("/api/send-invite-email", async (req, res) => {
-  try {
-    const { toEmail, ownerName, inviteUrl } = req.body;
-
-    if (!toEmail || !inviteUrl) {
-      return res.status(400).json({ ok: false, error: "Missing email or invite link." });
-    }
-
-    await sgMail.send({
-      to: toEmail,
-      from: process.env.FROM_EMAIL,
-      subject: `${ownerName || "A friend"} invited you to write a message`,
-      text: `Use this private link:\n\n${inviteUrl}`,
-      html: `
-        <p><strong>${ownerName || "A friend"}</strong> invited you to write a message.</p>
-        <p><a href="${inviteUrl}">Click here to write your message</a></p>
-        <p style="font-size:12px;color:#666;">If you didn’t expect this, you can ignore this email.</p>
-      `
-    });
-
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error("Send invite email failed:", err);
-    return res.status(500).json({ ok: false, error: "Failed to send email." });
-  }
-});
-
-// -----------------------------
-// START SERVER
-// -----------------------------
-async function start() {
-  await connectToMongo();
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
-
-start();
+// GENERIC LIST TRIBUTES (by ?to=Name) - PUBLIC ONLY
+// ---------------------------
