@@ -343,4 +343,199 @@ app.get("/api/my-tributes", async (req, res) => {
 
 // -----------------------------
 // GENERIC LIST TRIBUTES (by ?to=Name) - PUBLIC ONLY
-// ---------------------------
+// -----------------------------
+app.get("/api/tributes", async (req, res) => {
+  try {
+    const { to } = req.query;
+    const tributes = db.collection("tributes");
+
+    const query = {};
+    if (to && typeof to === "string") query.toName = to.trim();
+
+    // show only public (and treat missing isPublic as public)
+    query.isPublic = { $ne: false };
+
+    const items = await tributes
+      .find(query)
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray();
+
+    return res.json({ ok: true, tributes: items });
+  } catch (err) {
+    console.error("/api/tributes GET error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
+
+// -----------------------------
+// DELETE ACCOUNT
+// -----------------------------
+app.delete("/api/account", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ ok: false, error: "Missing userId." });
+
+    const users = db.collection("users");
+    const tributes = db.collection("tributes");
+
+    let user;
+    try {
+      user = await users.findOne({ _id: new ObjectId(userId) });
+    } catch {
+      return res.status(400).json({ ok: false, error: "Invalid userId." });
+    }
+    if (!user) return res.status(404).json({ ok: false, error: "User not found." });
+
+    await tributes.deleteMany({ $or: [{ recipientId: user._id }, { toName: user.name }] });
+    await users.deleteOne({ _id: user._id });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("/api/account DELETE error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
+
+// -----------------------------
+// UPDATE PROFILE PHOTO
+// -----------------------------
+app.post("/api/profile-photo", async (req, res) => {
+  try {
+    const { userId, photoData } = req.body;
+    if (!userId) return res.status(400).json({ ok: false, error: "Missing userId." });
+
+    let userObjectId;
+    try {
+      userObjectId = new ObjectId(userId);
+    } catch {
+      return res.status(400).json({ ok: false, error: "Invalid userId." });
+    }
+
+    const users = db.collection("users");
+    await users.updateOne({ _id: userObjectId }, { $set: { photoData: photoData || null } });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("/api/profile-photo error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
+
+// -----------------------------
+// FEEDBACK ENDPOINT (with moderation)
+// -----------------------------
+app.post("/api/feedback", async (req, res) => {
+  try {
+    const { email, message } = req.body;
+
+    if (!message || typeof message !== "string" || !message.trim()) {
+      return res.json({ ok: false, error: "Missing message." });
+    }
+
+    if (containsProfanity(message)) {
+      return res.json({
+        ok: false,
+        error: "Please keep feedback respectful. This looks like it contains offensive language.",
+      });
+    }
+
+    if (looksLikeSpam(message)) {
+      return res.json({
+        ok: false,
+        error: "This feedback looks like spam. Please add more detail or context.",
+      });
+    }
+
+    console.log("Feedback received:", { email: email || "(no email)", message });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("/api/feedback error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
+
+// -----------------------------
+// LOOK UP USER BY NAME (for invites)
+// -----------------------------
+app.get("/api/user-by-name", async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name || typeof name !== "string") {
+      return res.status(400).json({ ok: false, error: "Missing name." });
+    }
+
+    const users = db.collection("users");
+    const user = await users.findOne({ name: name.trim() });
+
+    if (!user) return res.json({ ok: true, user: null });
+
+    return res.json({
+      ok: true,
+      user: { id: user._id, name: user.name, photoData: user.photoData || null },
+    });
+  } catch (err) {
+    console.error("/api/user-by-name error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+});
+
+// -----------------------------
+// SEND INVITE EMAIL (simple v1)
+// -----------------------------
+app.post("/api/send-invite-email", async (req, res) => {
+  try {
+    const { toEmail, ownerName, inviteUrl } = req.body;
+
+    if (!toEmail || !inviteUrl) {
+      return res.status(400).json({ ok: false, error: "Missing email or invite link." });
+    }
+
+    if (!isValidEmail(toEmail)) {
+      return res.status(400).json({ ok: false, error: "Please enter a valid email address." });
+    }
+
+    if (!HAS_SENDGRID) {
+      return res.status(400).json({
+        ok: false,
+        error: "Email sending is not configured (missing SENDGRID_API_KEY).",
+      });
+    }
+
+    if (!FROM_EMAIL) {
+      return res.status(400).json({
+        ok: false,
+        error: "Email sending is not configured (missing FROM_EMAIL).",
+      });
+    }
+
+    await sgMail.send({
+      to: toEmail.trim(),
+      from: FROM_EMAIL,
+      subject: `${ownerName || "A friend"} invited you to write a message`,
+      text: `Use this private link:\n\n${inviteUrl}`,
+      html: `
+        <p><strong>${ownerName || "A friend"}</strong> invited you to write a message.</p>
+        <p><a href="${inviteUrl}">Click here to write your message</a></p>
+        <p style="font-size:12px;color:#666;">If you didn’t expect this, you can ignore this email.</p>
+      `,
+    });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("Send invite email failed:", err);
+    return res.status(500).json({ ok: false, error: "Failed to send email." });
+  }
+});
+
+// -----------------------------
+// START SERVER
+// -----------------------------
+async function start() {
+  await connectToMongo();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+start();
