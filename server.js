@@ -565,6 +565,35 @@ app.get("/api/user-by-name", async (req, res) => {
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 });
+// -----------------------------
+// SEND INVITE EMAIL (simple v1)
+// -----------------------------
+app.post("/api/send-invite-email", async (req, res) => {
+  try {
+    const { toEmail, ownerName, inviteUrl } = req.body;
+
+    if (!toEmail || !inviteUrl) {
+      return res.status(400).json({ ok: false, error: "Missing email or invite link." });
+    }
+
+    await sgMail.send({
+      to: toEmail,
+      from: process.env.FROM_EMAIL,
+      subject: `${ownerName || "A friend"} invited you to write a message`,
+      text: `Use this private link:\n\n${inviteUrl}`,
+      html: `
+        <p><strong>${ownerName || "A friend"}</strong> invited you to write a message.</p>
+        <p><a href="${inviteUrl}">Click here to write your message</a></p>
+        <p style="font-size:12px;color:#666;">If you didn’t expect this, you can ignore this email.</p>
+      `
+    });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("Send invite email failed:", err);
+    return res.status(500).json({ ok: false, error: "Failed to send email." });
+  }
+});
 
 // -----------------------------
 // START SERVER
