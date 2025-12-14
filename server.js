@@ -483,50 +483,63 @@ app.get("/api/user-by-name", async (req, res) => {
 // -----------------------------
 // SEND INVITE EMAIL (simple v1)
 // -----------------------------
+// -----------------------------
+// SEND INVITE EMAIL (robust v1)
+// -----------------------------
 app.post("/api/send-invite-email", async (req, res) => {
   try {
     const { toEmail, ownerName, inviteUrl } = req.body;
 
     if (!toEmail || !inviteUrl) {
-      return res.status(400).json({ ok: false, error: "Missing email or invite link." });
-    }
-
-    if (!isValidEmail(toEmail)) {
-      return res.status(400).json({ ok: false, error: "Please enter a valid email address." });
-    }
-
-    if (!HAS_SENDGRID) {
       return res.status(400).json({
         ok: false,
-        error: "Email sending is not configured (missing SENDGRID_API_KEY).",
+        error: "Missing email or invite link."
       });
     }
 
-    if (!FROM_EMAIL) {
-      return res.status(400).json({
+    if (!process.env.SENDGRID_API_KEY) {
+      console.error("SENDGRID_API_KEY missing");
+      return res.status(500).json({
         ok: false,
-        error: "Email sending is not configured (missing FROM_EMAIL).",
+        error: "Email service not configured."
       });
     }
 
-    await sgMail.send({
+    const msg = {
       to: toEmail.trim(),
-      from: FROM_EMAIL,
+      from: {
+        email: process.env.FROM_EMAIL,
+        name: "About Me"
+      },
       subject: `${ownerName || "A friend"} invited you to write a message`,
       text: `Use this private link:\n\n${inviteUrl}`,
       html: `
         <p><strong>${ownerName || "A friend"}</strong> invited you to write a message.</p>
         <p><a href="${inviteUrl}">Click here to write your message</a></p>
-        <p style="font-size:12px;color:#666;">If you didn’t expect this, you can ignore this email.</p>
-      `,
-    });
+        <p style="font-size:12px;color:#666;">
+          If you didn’t expect this, you can ignore this email.
+        </p>
+      `
+    };
+
+    const response = await sgMail.send(msg);
+    console.log("SendGrid response:", response);
 
     return res.json({ ok: true });
+
   } catch (err) {
-    console.error("Send invite email failed:", err);
-    return res.status(500).json({ ok: false, error: "Failed to send email." });
+    console.error(
+      "SendGrid error:",
+      err?.response?.body || err
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error: "Email delivery failed"
+    });
   }
 });
+
 
 // -----------------------------
 // START SERVER
