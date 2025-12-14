@@ -4,10 +4,13 @@ const path = require("path");
 const cors = require("cors");
 const { MongoClient, ObjectId } = require("mongodb");
 const bcrypt = require("bcryptjs");
-
-const app = express();
 const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+} else {
+  console.warn("WARNING: SENDGRID_API_KEY not set. Invite emails will not send.");
+}
 
 // -----------------------------
 // CONFIG
