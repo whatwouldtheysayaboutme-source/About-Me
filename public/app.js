@@ -1,783 +1,534 @@
+// public/app.js
+"use strict";
+
 // Wrap everything so we don't leak globals
 (function () {
-  const API_BASE = "https://about-me-api-9m4q.onrender.com";
+  // ------------------------------------------------------------
+  // API BASE
+  // ------------------------------------------------------------
+  // Default: same origin (best when Express serves /public and /api together)
+  // If you ever split frontend/backend again, set:
+  //   window.API_BASE_OVERRIDE = "https://your-api-service.onrender.com";
+  const API_BASE = (window.API_BASE_OVERRIDE || window.location.origin).replace(/\/$/, "");
 
-  let currentInviteName = null;
+  // ------------------------------------------------------------
+  // Tiny DOM helpers
+  // ------------------------------------------------------------
+  const $ = (sel) => document.querySelector(sel);
+  const byId = (id) => document.getElementById(id);
 
-  // ---------------------------------------
-  // Helpers
-  // ---------------------------------------
-
-  const PROFILE_PHOTO_KEY = "aboutme_profilePhotoUrl";
-
-  function loadProfilePhoto() {
-    try {
-      return localStorage.getItem(PROFILE_PHOTO_KEY) || "";
-    } catch (err) {
-      return "";
-    }
+  function setText(el, text) {
+    if (el) el.textContent = text;
   }
 
-  async function saveProfilePhoto(url) {
-    // 1) Save locally so it loads fast on this device
-    try {
-      if (!url) {
-        localStorage.removeItem(PROFILE_PHOTO_KEY);
-      } else {
-        localStorage.setItem(PROFILE_PHOTO_KEY, url);
-      }
-    } catch (err) {
-      // ignore
-    }
-
-    // 2) Also push to the backend so other people can see it
-    try {
-      if (currentUser && currentUser.id) {
-        await fetch(`${API_BASE}/api/profile-photo`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: currentUser.id,
-            photoData: url || "",
-          }),
-        });
-      }
-    } catch (err) {
-      console.error("Profile photo upload error:", err);
-      // Local preview still works.
-    }
+  function show(el) {
+    if (el) el.style.display = "";
   }
 
-  function updateProfilePhotoPreview(url) {
-    const preview = document.getElementById("profile-photo-preview");
-    const img = document.getElementById("profile-photo-img");
-    if (!preview || !img) return;
-
-    if (!url) {
-      preview.style.display = "none";
-      img.src = "";
-      return;
-    }
-
-    preview.style.display = "flex";
-    img.src = url;
+  function hide(el) {
+    if (el) el.style.display = "none";
   }
 
-  async function safeJson(res) {
+  // ------------------------------------------------------------
+  // Storage / auth (devtoken for now)
+  // ------------------------------------------------------------
+  const LS_TOKEN = "aboutme_token";
+  const LS_USER = "aboutme_user";
+
+  function getToken() {
+    return localStorage.getItem(LS_TOKEN) || "";
+  }
+
+  function setToken(token) {
+    if (token) localStorage.setItem(LS_TOKEN, token);
+    else localStorage.removeItem(LS_TOKEN);
+  }
+
+  function getUser() {
     try {
-      return await res.json();
-    } catch (err) {
+      const raw = localStorage.getItem(LS_USER);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
       return null;
     }
   }
 
-  function setStatus(el, text, color) {
-    if (!el) return;
-    el.textContent = text;
-    if (color) el.style.color = color;
+  function setUser(user) {
+    if (user) localStorage.setItem(LS_USER, JSON.stringify(user));
+    else localStorage.removeItem(LS_USER);
   }
 
-  function getToken() {
-    return localStorage.getItem("aboutme_token") || null;
+  let currentUser = getUser();
+
+  // ------------------------------------------------------------
+  // Fetch helper
+  // ------------------------------------------------------------
+  async function apiFetch(path, options = {}) {
+    const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+
+    const headers = Object.assign(
+      { "Content-Type": "application/json" },
+      options.headers || {}
+    );
+
+    // If you later implement real auth, you can attach token here.
+    // For now, your server doesn't validate it, but this keeps it ready.
+    const token = getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    const text = await res.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = { ok: false, error: "Non-JSON response from server", raw: text };
+    }
+
+    return { res, data, url };
   }
 
-  // Footer year
-  const yearSpan = document.getElementById("year");
-  if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+  // ------------------------------------------------------------
+  // UI element IDs this script expects
+  // ------------------------------------------------------------
+  // Auth:
+  //  - registerName, registerEmail, registerPassword, registerBtn
+  //  - loginEmail, loginPassword, loginBtn
+  //  - logoutBtn, headerUserPill (optional)
+  //
+  // Profile photo:
+  //  - photoFile, photoUrl, savePhotoBtn, profilePhotoImg (optional)
+  //
+  // Invites:
+  //  - inviteName, inviteEmail, inviteSendBtn, inviteStatus
+  //  - inviteLink (optional), inviteCopyBtn (optional)
+  //
+  // Write tribute:
+  //  - toName, fromName, message, isPublic (checkbox optional), submitTributeBtn, tributeStatus
+  //
+  // Lists:
+  //  - publicTributesList (optional), myTributesList (optional)
+  //
+  // Feedback:
+  //  - feedbackEmail, feedbackMessage, feedbackBtn, feedbackStatus (optional)
 
-  // Load remembered user
-  let currentUser = null;
-  try {
-    const stored = localStorage.getItem("aboutme_user");
-    if (stored) currentUser = JSON.parse(stored);
-  } catch (err) {
+  // ------------------------------------------------------------
+  // AUTH wiring
+  // ------------------------------------------------------------
+  async function handleRegister() {
+    const name = (byId("registerName")?.value || "").trim();
+    const email = (byId("registerEmail")?.value || "").trim();
+    const password = (byId("registerPassword")?.value || "").trim();
+
+    if (!name || !email || !password) {
+      alert("Please enter name, email, and password.");
+      return;
+    }
+
+    const { res, data, url } = await apiFetch("/api/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    if (!res.ok || !data?.ok) {
+      console.error("Register failed:", { url, status: res.status, data });
+      alert(data?.error || `Register failed (${res.status})`);
+      return;
+    }
+
+    currentUser = data.user;
+    setUser(currentUser);
+    setToken(data.token || "");
+
+    refreshHeaderUser();
+    alert("Registered ✅");
+  }
+
+  async function handleLogin() {
+    const email = (byId("loginEmail")?.value || "").trim();
+    const password = (byId("loginPassword")?.value || "").trim();
+
+    if (!email || !password) {
+      alert("Please enter email and password.");
+      return;
+    }
+
+    const { res, data, url } = await apiFetch("/api/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok || !data?.ok) {
+      console.error("Login failed:", { url, status: res.status, data });
+      alert(data?.error || `Login failed (${res.status})`);
+      return;
+    }
+
+    currentUser = data.user;
+    setUser(currentUser);
+    setToken(data.token || "");
+
+    refreshHeaderUser();
+    alert("Logged in ✅");
+  }
+
+  function handleLogout() {
     currentUser = null;
+    setUser(null);
+    setToken("");
+    refreshHeaderUser();
+    alert("Logged out ✅");
   }
 
-  // If logged in, show greeting in header
-  if (currentUser) {
-    const authLink = document.querySelector('a[href="#auth"]');
-    if (authLink && currentUser.name) {
-      authLink.textContent = `Hi, ${currentUser.name}`;
+  function refreshHeaderUser() {
+    const pill = byId("headerUserPill"); // optional
+    const logoutBtn = byId("logoutBtn"); // optional
+
+    if (pill) {
+      pill.textContent = currentUser?.name ? `Hi, ${currentUser.name}` : "Hi";
+    }
+    if (logoutBtn) {
+      if (currentUser) show(logoutBtn);
+      else hide(logoutBtn);
     }
   }
 
-  // ---------------------------------------
-  // Update top-left site label (if found)
-  // ---------------------------------------
+  // ------------------------------------------------------------
+  // PROFILE PHOTO (local + optional server sync)
+  // ------------------------------------------------------------
+  const LS_PHOTO = "aboutme_profilePhotoUrl";
 
-  const brandEl = document.querySelector(
-    ".brand, #brand, header .logo, .site-title"
-  );
-  if (brandEl) brandEl.textContent = "What Would They Say About Me?";
-
-  // =======================================
-  // TERMS / WAIVER MODAL (APPLIES TO AUTH)
-  // =======================================
-
-  const termsModal = document.getElementById("termsModal");
-  const agreeCheckbox = document.getElementById("agreeCheckbox");
-  const agreeBtn = document.getElementById("agreeBtn");
-
-  let pendingAuthAction = null; // function to run after agreeing
-
-  function hasAcceptedTerms() {
-    return localStorage.getItem("termsAccepted") === "true";
+  function setProfilePhotoPreview(url) {
+    const img = byId("profilePhotoImg");
+    if (img && url) img.src = url;
   }
 
-  function showTermsModalIfNeeded() {
-    if (!termsModal) return;
-    if (!hasAcceptedTerms()) {
-      termsModal.style.display = "flex";
+  async function handleSavePhoto() {
+    const fileInput = byId("photoFile");
+    const urlInput = byId("photoUrl");
+
+    let photoData = null;
+
+    // Prefer file if chosen
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      // Convert to base64 data URL
+      photoData = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    } else if (urlInput && urlInput.value.trim()) {
+      photoData = urlInput.value.trim();
     }
-  }
 
-  if (agreeCheckbox && agreeBtn && termsModal) {
-    // Enable/disable Agree button based on checkbox
-    agreeCheckbox.addEventListener("change", () => {
-      agreeBtn.disabled = !agreeCheckbox.checked;
-    });
+    if (!photoData) {
+      alert("Choose a file or paste a photo URL first.");
+      return;
+    }
 
-    // When user clicks "Agree & Continue"
-    agreeBtn.addEventListener("click", () => {
-      if (!agreeCheckbox.checked) return;
+    // Save locally so it shows instantly
+    localStorage.setItem(LS_PHOTO, photoData);
+    setProfilePhotoPreview(photoData);
 
-      localStorage.setItem("termsAccepted", "true");
-      termsModal.style.display = "none";
+    // If logged in, also push to server so other devices can see it
+    if (currentUser?.id) {
+      const { res, data, url } = await apiFetch("/api/profile-photo", {
+        method: "POST",
+        body: JSON.stringify({ userId: currentUser.id, photoData }),
+      });
 
-      // Resume whatever auth action was blocked
-      if (pendingAuthAction) {
-        const action = pendingAuthAction;
-        pendingAuthAction = null;
-        action();
-      }
-    });
-  }
-
-  // ---------------------------------------
-  // Invite link generation
-  // ---------------------------------------
-
-  const shareNameInput = document.getElementById("share-name");
-  if (shareNameInput && currentUser && currentUser.name) {
-    shareNameInput.value = currentUser.name;
-    shareNameInput.readOnly = true;
-  }
-
-  const shareGenerateBtn = document.getElementById("share-generate");
-  const shareStatus = document.getElementById("share-status");
-
-  if (shareGenerateBtn && shareNameInput) {
-    shareGenerateBtn.addEventListener("click", () => {
-      const name = shareNameInput.value.trim();
-      if (!name) {
-        setStatus(shareStatus, "Please enter your name first.", "salmon");
+      if (!res.ok || !data?.ok) {
+        console.error("Profile photo save failed:", { url, status: res.status, data });
+        alert(data?.error || `Photo save failed (${res.status})`);
         return;
       }
+    }
 
-      const base = window.location.origin + window.location.pathname;
-      const url = `${base}?to=${encodeURIComponent(name)}#write`;
-
-      // For now: we still just generate the link; user sends it from email/text
-      setStatus(
-        shareStatus,
-        "Invitation link created. Copy it and send it to friends or family.",
-        "lightgreen"
-      );
-
-      const writeToLine = document.getElementById("write-to-line");
-      if (writeToLine) {
-        writeToLine.textContent = `You’re writing a message for ${name}. Share from the heart.`;
-      }
-
-      console.log("Invite link:", url);
-    });
+    alert("Photo saved ✅");
   }
 
-  // ---------------------------------------
-  // Handle Invite Links (?to=...)
-  // ---------------------------------------
+  // ------------------------------------------------------------
+  // INVITES (THIS IS THE IMPORTANT PART)
+  // ------------------------------------------------------------
+  function buildInviteUrl(ownerName) {
+    // Keep your existing format: https://<site>/?to=<NAME>#write
+    const to = encodeURIComponent(ownerName || "");
+    return `${window.location.origin}/?to=${to}#write`;
+  }
 
-  (function handleInviteOnLoad() {
+  async function handleSendInvite() {
+    const inviteNameEl = byId("inviteName");
+    const inviteEmailEl = byId("inviteEmail");
+    const statusEl = byId("inviteStatus");
+    const linkEl = byId("inviteLink");
+
+    const ownerName =
+      (inviteNameEl?.value || "").trim() ||
+      currentUser?.name ||
+      "";
+
+    const toEmail = (inviteEmailEl?.value || "").trim();
+    if (!toEmail) {
+      alert("Please enter your friend's email.");
+      return;
+    }
+
+    // Always generate link (works even if email fails)
+    const inviteUrl = buildInviteUrl(ownerName);
+    console.log("[Invite] Invite link:", inviteUrl);
+
+    if (linkEl) linkEl.value = inviteUrl;
+    setText(statusEl, "Invitation link created. Sending email...");
+
+    // Call the backend (this is what was missing before)
+    const { res, data, url } = await apiFetch("/api/send-invite-email", {
+      method: "POST",
+      body: JSON.stringify({ toEmail, ownerName, inviteUrl }),
+    });
+
+    if (!res.ok || !data?.ok) {
+      console.error("[Invite] Email failed:", { url, status: res.status, data });
+      setText(statusEl, `Invitation link created. Email failed: ${data?.error || res.status}`);
+      return;
+    }
+
+    setText(statusEl, "Email sent ✅");
+    console.log("[Invite] Email accepted by provider:", data);
+  }
+
+  async function handleCopyInviteLink() {
+    const linkEl = byId("inviteLink");
+    const statusEl = byId("inviteStatus");
+    const link = (linkEl?.value || "").trim();
+    if (!link) return;
+
+    try {
+      await navigator.clipboard.writeText(link);
+      setText(statusEl, "Invite link copied ✅");
+    } catch (e) {
+      console.warn("Clipboard copy failed:", e);
+      alert("Copy failed — you can manually select the link and copy.");
+    }
+  }
+
+  // ------------------------------------------------------------
+  // TRIBUTES
+  // ------------------------------------------------------------
+  async function handleSubmitTribute() {
+    const toName = (byId("toName")?.value || "").trim();
+    const fromName = (byId("fromName")?.value || "").trim();
+    const message = (byId("message")?.value || "").trim();
+    const isPublicEl = byId("isPublic");
+    const isPublic = isPublicEl ? !!isPublicEl.checked : true;
+    const statusEl = byId("tributeStatus");
+
+    if (!message) {
+      alert("Please write a message.");
+      return;
+    }
+
+    setText(statusEl, "Submitting...");
+
+    const hpField = ""; // honeypot placeholder; keep empty for humans
+
+    const { res, data, url } = await apiFetch("/api/tributes", {
+      method: "POST",
+      body: JSON.stringify({ toName, fromName, message, isPublic, hpField }),
+    });
+
+    if (!res.ok || !data?.ok) {
+      console.error("Tribute submit failed:", { url, status: res.status, data });
+      setText(statusEl, data?.error || `Submit failed (${res.status})`);
+      return;
+    }
+
+    setText(statusEl, "Saved ✅");
+    await loadPublicTributesFromUrl();
+    if (currentUser?.id) await loadMyTributes();
+  }
+
+  async function loadPublicTributesFromUrl() {
+    const listEl = byId("publicTributesList");
+    if (!listEl) return;
+
+    // If URL has ?to=Name, show tributes for that name.
     const params = new URLSearchParams(window.location.search);
     const to = params.get("to");
 
-    if (!to) return;
-    currentInviteName = decodeURIComponent(to);
+    const path = to ? `/api/tributes?to=${encodeURIComponent(to)}` : "/api/tributes";
+    const { res, data, url } = await apiFetch(path, { method: "GET", headers: {} });
 
-    const banner = document.getElementById("invite-banner");
-    const writeToLine = document.getElementById("write-to-line");
-    if (banner) {
-      banner.style.display = "block";
-      banner.textContent = `You’ve been invited to write a message for ${currentInviteName}. Scroll down to share what they mean to you.`;
-    }
-    if (writeToLine) {
-      writeToLine.textContent = `You’re writing a message for ${currentInviteName}. Share from the heart.`;
-    }
-
-    const writeSection = document.getElementById("write");
-    if (writeSection) writeSection.scrollIntoView({ behavior: "smooth" });
-
-    // Try to load a profile photo for the person you’re writing about
-    (async () => {
-      try {
-        const res = await fetch(
-          `${API_BASE}/api/user-by-name?name=${encodeURIComponent(
-            currentInviteName
-          )}`
-        );
-        const data = await safeJson(res);
-        if (!data || !data.ok || !data.user || !data.user.photoData) return;
-
-        const honoreeBox = document.getElementById("honoree-photo");
-        const honoreeImg = document.getElementById("honoree-photo-img");
-        if (honoreeBox && honoreeImg) {
-          honoreeBox.style.display = "flex";
-          honoreeImg.src = data.user.photoData;
-        }
-      } catch (err) {
-        console.error("Error loading honoree photo:", err);
-      }
-    })();
-  })();
-
-  // ---------------------------------------
-  // Copy tribute message
-  // ---------------------------------------
-
-  const tributeText = document.getElementById("tribute-text");
-  const copyTributeBtn = document.getElementById("copy-tribute");
-  const tributeStatus = document.getElementById("tribute-status");
-  const tributeFromInput = document.getElementById("tribute-from");
-  const tributePublicInput = document.getElementById("tribute-public");
-  const tributeHpField = document.getElementById("hp-field"); // honeypot
-
-  if (copyTributeBtn && tributeText) {
-    copyTributeBtn.addEventListener("click", async () => {
-      const text = tributeText.value.trim();
-      if (!text) {
-        setStatus(tributeStatus, "Write a message first.", "salmon");
-        return;
-      }
-
-      try {
-        await navigator.clipboard.writeText(text);
-        setStatus(tributeStatus, "Message copied to clipboard.", "lightgreen");
-      } catch (err) {
-        tributeText.select();
-        document.execCommand("copy");
-        setStatus(tributeStatus, "Message copied.", "lightgreen");
-      }
-    });
-  }
-
-  // ---------------------------------------
-  // Save tribute  (POST /api/tributes)
-  // ---------------------------------------
-
-  const saveTributeBtn = document.getElementById("save-tribute");
-
-  if (saveTributeBtn && tributeText) {
-    saveTributeBtn.addEventListener("click", async () => {
-      const message = tributeText.value.trim();
-      const fromName = tributeFromInput ? tributeFromInput.value.trim() : "";
-      const honeypotValue = tributeHpField ? tributeHpField.value.trim() : "";
-
-      if (honeypotValue) {
-        setStatus(
-          tributeStatus,
-          "Something went wrong. Please try again.",
-          "salmon"
-        );
-        return;
-      }
-
-      if (!message) {
-        setStatus(tributeStatus, "Write a message before saving.", "salmon");
-        return;
-      }
-
-      const token = getToken();
-      const isPublic = tributePublicInput ? !!tributePublicInput.checked : true;
-
-      try {
-        const res = await fetch(`${API_BASE}/api/tributes`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            toName: currentInviteName,
-            fromName,
-            message,
-            isPublic,
-            hpField: honeypotValue,
-          }),
-        });
-
-        const data = await safeJson(res);
-
-        if (data && data.ok) {
-          setStatus(tributeStatus, "Message saved ❤️", "lightgreen");
-          tributeText.value = "";
-        } else {
-          setStatus(
-            tributeStatus,
-            (data && data.error) || "Could not save your message.",
-            "salmon"
-          );
-        }
-      } catch (err) {
-        console.error(err);
-        setStatus(tributeStatus, "Server error. Try again later.", "salmon");
-      }
-    });
-  }
-
-  // ---------------------------------------
-  // Signup (gated by Terms)
-  // ---------------------------------------
-
-  const signupForm = document.getElementById("signup-form");
-  if (signupForm) {
-    signupForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      if (!hasAcceptedTerms()) {
-        pendingAuthAction = () => doSignup();
-        showTermsModalIfNeeded();
-        return;
-      }
-
-      doSignup();
-    });
-  }
-
-  async function doSignup() {
-    const nameEl = document.getElementById("username");
-    const emailEl = document.getElementById("email");
-    const passEl = document.getElementById("password");
-    const msg = document.getElementById("signup-message");
-
-    const name = nameEl ? nameEl.value.trim() : "";
-    const email = emailEl ? emailEl.value.trim() : "";
-    const password = passEl ? passEl.value : "";
-
-    if (!name || !email || !password) {
-      setStatus(msg, "Please fill in all fields.", "salmon");
+    if (!res.ok || !data?.ok) {
+      console.error("Load public tributes failed:", { url, status: res.status, data });
+      listEl.innerHTML = `<div class="muted">Could not load tributes.</div>`;
       return;
     }
 
-    try {
-      const res = await fetch(`${API_BASE}/api/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await safeJson(res);
-
-      if (data && data.ok) {
-        localStorage.setItem("aboutme_user", JSON.stringify(data.user));
-        localStorage.setItem("aboutme_token", data.token);
-        setStatus(msg, "Account created!", "lightgreen");
-        setTimeout(() => location.reload(), 600);
-      } else {
-        setStatus(msg, (data && data.error) || "Signup failed.", "salmon");
-      }
-    } catch (err) {
-      setStatus(
-        document.getElementById("signup-message"),
-        "Server error.",
-        "salmon"
-      );
-    }
-  }
-
-  // ---------------------------------------
-  // Login (gated by Terms)
-  // ---------------------------------------
-
-  const loginForm = document.getElementById("login-form");
-  if (loginForm) {
-    loginForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      if (!hasAcceptedTerms()) {
-        pendingAuthAction = () => doLogin();
-        showTermsModalIfNeeded();
-        return;
-      }
-
-      doLogin();
-    });
-  }
-
-  async function doLogin() {
-    const emailEl = document.getElementById("login-user");
-    const passEl = document.getElementById("login-pass");
-    const msg = document.getElementById("login-message");
-
-    const email = emailEl ? emailEl.value.trim() : "";
-    const password = passEl ? passEl.value : "";
-
-    if (!email || !password) {
-      setStatus(msg, "Enter email and password.", "salmon");
+    const items = data.tributes || [];
+    if (!items.length) {
+      listEl.innerHTML = `<div class="muted">No messages yet.</div>`;
       return;
     }
 
-    try {
-      const res = await fetch(`${API_BASE}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    listEl.innerHTML = items
+      .map((t) => {
+        const from = t.fromName ? String(t.fromName) : "Someone";
+        const msg = t.message ? String(t.message) : "";
+        const when = t.createdAt ? new Date(t.createdAt).toLocaleString() : "";
+        return `
+          <div class="tribute-card">
+            <div class="tribute-meta"><strong>${escapeHtml(from)}</strong> <span class="muted">${escapeHtml(when)}</span></div>
+            <div class="tribute-msg">${escapeHtml(msg)}</div>
+          </div>
+        `;
+      })
+      .join("");
+  }
 
-      const data = await safeJson(res);
+  async function loadMyTributes() {
+    const listEl = byId("myTributesList");
+    if (!listEl || !currentUser?.id) return;
 
-      if (data && data.ok) {
-        localStorage.setItem("aboutme_token", data.token);
-        localStorage.setItem("aboutme_user", JSON.stringify(data.user));
-        setStatus(msg, "Logged in!", "lightgreen");
-        setTimeout(() => location.reload(), 600);
-      } else {
-        setStatus(msg, (data && data.error) || "Login failed.", "salmon");
-      }
-    } catch (err) {
-      setStatus(
-        document.getElementById("login-message"),
-        "Server error.",
-        "salmon"
-      );
+    const { res, data, url } = await apiFetch(`/api/my-tributes?userId=${encodeURIComponent(currentUser.id)}`, {
+      method: "GET",
+      headers: {},
+    });
+
+    if (!res.ok || !data?.ok) {
+      console.error("Load my tributes failed:", { url, status: res.status, data });
+      listEl.innerHTML = `<div class="muted">Could not load your messages.</div>`;
+      return;
     }
+
+    const items = data.tributes || [];
+    if (!items.length) {
+      listEl.innerHTML = `<div class="muted">No messages yet.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = items
+      .map((t) => {
+        const from = t.fromName ? String(t.fromName) : "Someone";
+        const msg = t.message ? String(t.message) : "";
+        const when = t.createdAt ? new Date(t.createdAt).toLocaleString() : "";
+        const pub = t.isPublic === false ? "Private" : "Public";
+        return `
+          <div class="tribute-card">
+            <div class="tribute-meta">
+              <strong>${escapeHtml(from)}</strong>
+              <span class="muted">${escapeHtml(when)} • ${pub}</span>
+            </div>
+            <div class="tribute-msg">${escapeHtml(msg)}</div>
+          </div>
+        `;
+      })
+      .join("");
   }
 
-  // ---------------------------------------
-  // My Tributes (GET /api/my-tributes)
-  // ---------------------------------------
+  // ------------------------------------------------------------
+  // FEEDBACK
+  // ------------------------------------------------------------
+  async function handleFeedback() {
+    const email = (byId("feedbackEmail")?.value || "").trim();
+    const message = (byId("feedbackMessage")?.value || "").trim();
+    const statusEl = byId("feedbackStatus");
 
-  const tributesListEl = document.getElementById("tributes-list");
-  const tributesLoading = document.getElementById("tributes-loading");
-  const tributesError = document.getElementById("tributes-error");
+    if (!message) {
+      alert("Please write feedback.");
+      return;
+    }
 
-  if (tributesListEl && tributesLoading && tributesError) {
-    (async function loadMyTributes() {
-      tributesLoading.style.display = "block";
+    setText(statusEl, "Sending...");
 
-      const token = getToken();
-
-      if (!currentUser || !currentUser.id) {
-        tributesLoading.style.display = "none";
-        tributesError.style.display = "block";
-        tributesError.textContent = "Log in to see your tributes.";
-        return;
-      }
-
-      try {
-        const res = await fetch(
-          `${API_BASE}/api/my-tributes?userId=${encodeURIComponent(
-            currentUser.id
-          )}`,
-          {
-            method: "GET",
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }
-        );
-
-        const data = await safeJson(res);
-
-        tributesLoading.style.display = "none";
-
-        if (!data || !data.ok) {
-          tributesError.style.display = "block";
-          tributesError.textContent =
-            (data && data.error) || "Could not load tributes.";
-          return;
-        }
-
-        const tributes = data.tributes || [];
-
-        if (!tributes.length) {
-          const p = document.createElement("p");
-          p.className = "small-note";
-          p.textContent =
-            "You don’t have any tributes yet. Share your link and invite people to write one.";
-          tributesListEl.appendChild(p);
-          return;
-        }
-
-        tributes.forEach((t) => {
-          const card = document.createElement("article");
-          card.className = "tribute-card";
-
-          const fromLine = document.createElement("p");
-          fromLine.innerHTML = `<strong>From:</strong> ${
-            t.fromName || "Someone who cares"
-          }`;
-
-          const msg = document.createElement("p");
-          msg.textContent = t.message;
-
-          const meta = document.createElement("p");
-          meta.className = "small-note";
-          if (t.createdAt) {
-            meta.textContent = new Date(t.createdAt).toLocaleString();
-          }
-
-          if (t.isPublic === false) {
-            const privacy = document.createElement("p");
-            privacy.className = "small-note";
-            privacy.textContent = "Private tribute (only visible to you)";
-            card.appendChild(privacy);
-          }
-
-          card.appendChild(fromLine);
-          card.appendChild(msg);
-          if (meta.textContent) card.appendChild(meta);
-
-          tributesListEl.appendChild(card);
-        });
-      } catch (err) {
-        console.error(err);
-        tributesLoading.style.display = "none";
-        tributesError.style.display = "block";
-        tributesError.textContent = "Server error.";
-      }
-    })();
-  }
-
-  // ---------------------------------------
-  // Simple feedback button (fb-*)
-  // ---------------------------------------
-
-  const fbEmail = document.getElementById("fb-email");
-  const fbMessage = document.getElementById("fb-message");
-  const fbSend = document.getElementById("fb-send");
-  const fbStatus = document.getElementById("fb-status");
-
-  if (fbSend) {
-    fbSend.addEventListener("click", async () => {
-      const email = fbEmail ? fbEmail.value.trim() : "";
-      const message = fbMessage ? fbMessage.value.trim() : "";
-
-      if (!message) {
-        fbStatus.textContent = "Please enter a message.";
-        fbStatus.style.color = "salmon";
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_BASE}/api/feedback`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, message }),
-        });
-
-        const data = await safeJson(res);
-
-        if (data && data.ok) {
-          fbStatus.textContent = "Thanks for your feedback!";
-          fbStatus.style.color = "lightgreen";
-          if (fbMessage) fbMessage.value = "";
-        } else {
-          fbStatus.textContent =
-            (data && data.error) || "Error sending feedback.";
-          fbStatus.style.color = "salmon";
-        }
-      } catch (err) {
-        fbStatus.textContent = "Server error. Try again later.";
-        fbStatus.style.color = "salmon";
-      }
+    const { res, data, url } = await apiFetch("/api/feedback", {
+      method: "POST",
+      body: JSON.stringify({ email, message }),
     });
+
+    if (!res.ok || !data?.ok) {
+      console.error("Feedback failed:", { url, status: res.status, data });
+      setText(statusEl, data?.error || `Failed (${res.status})`);
+      return;
+    }
+
+    setText(statusEl, "Thanks ✅");
+    alert("Feedback sent ✅");
   }
 
-  // ---------------------------------------
-  // Optional FEEDBACK FORM (feedback-form)
-  // ---------------------------------------
+  // ------------------------------------------------------------
+  // HTML escaping (for safe rendering)
+  // ------------------------------------------------------------
+  function escapeHtml(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
-  const feedbackForm = document.getElementById("feedback-form");
-  const feedbackEmail = document.getElementById("feedback-email");
-  const feedbackMessage = document.getElementById("feedback-message");
-  const feedbackStatus = document.getElementById("feedback-status");
+  // ------------------------------------------------------------
+  // Wire events (only if elements exist)
+  // ------------------------------------------------------------
+  function wire() {
+    console.log("[AboutMe] app.js loaded. API_BASE =", API_BASE);
 
-  if (feedbackForm) {
-    feedbackForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    // Auth
+    byId("registerBtn")?.addEventListener("click", handleRegister);
+    byId("loginBtn")?.addEventListener("click", handleLogin);
+    byId("logoutBtn")?.addEventListener("click", handleLogout);
 
-      const email = feedbackEmail ? feedbackEmail.value.trim() : "";
-      const message = feedbackMessage ? feedbackMessage.value.trim() : "";
+    // Photo
+    byId("savePhotoBtn")?.addEventListener("click", handleSavePhoto);
 
-      if (!email || !message) {
-        setStatus(feedbackStatus, "Please fill in all fields.", "salmon");
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_BASE}/api/feedback`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, message }),
-        });
-
-        const data = await safeJson(res);
-
-        if (data && data.ok) {
-          setStatus(
-            feedbackStatus,
-            "Thank you! Your feedback has been sent.",
-            "lightgreen"
-          );
-          feedbackEmail.value = "";
-          feedbackMessage.value = "";
-        } else {
-          setStatus(
-            feedbackStatus,
-            (data && data.error) || "Could not send feedback.",
-            "salmon"
-          );
-        }
-      } catch (err) {
-        setStatus(
-          feedbackStatus,
-          "Server error. Try again later.",
-          "salmon"
-        );
-      }
+    // Invite
+    byId("inviteSendBtn")?.addEventListener("click", () => {
+      // Run async handler and surface errors
+      handleSendInvite().catch((e) => {
+        console.error("[Invite] Uncaught error:", e);
+        setText(byId("inviteStatus"), "Invitation link created. Email failed (unexpected error).");
+      });
     });
-  }
+    byId("inviteCopyBtn")?.addEventListener("click", handleCopyInviteLink);
 
-  // ---------------------------------------
-  // DELETE ACCOUNT (frontend wiring)
-  // ---------------------------------------
-
-  const deleteBtn = document.getElementById("delete-account");
-  const deleteStatus = document.getElementById("delete-status");
-
-  if (deleteBtn) {
-    deleteBtn.addEventListener("click", async () => {
-      if (!currentUser || !currentUser.id) {
-        if (deleteStatus) {
-          deleteStatus.textContent =
-            "You need to be logged in to delete your account.";
-          deleteStatus.style.color = "salmon";
-        }
-        return;
-      }
-
-      const sure = window.confirm(
-        "This will delete your account and tributes written for you. This cannot be undone. Continue?"
-      );
-      if (!sure) return;
-
-      try {
-        const res = await fetch(`${API_BASE}/api/account`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: currentUser.id }),
-        });
-
-        const data = await safeJson(res);
-
-        if (data && data.ok) {
-          localStorage.removeItem("aboutme_user");
-          localStorage.removeItem("aboutme_token");
-          if (deleteStatus) {
-            deleteStatus.textContent = "Account deleted.";
-            deleteStatus.style.color = "lightgreen";
-          }
-          setTimeout(() => {
-            window.location.reload();
-          }, 800);
-        } else {
-          if (deleteStatus) {
-            deleteStatus.textContent =
-              (data && data.error) || "Could not delete account.";
-            deleteStatus.style.color = "salmon";
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        if (deleteStatus) {
-          deleteStatus.textContent = "Server error. Try again later.";
-          deleteStatus.style.color = "salmon";
-        }
-      }
+    // Tribute
+    byId("submitTributeBtn")?.addEventListener("click", () => {
+      handleSubmitTribute().catch((e) => {
+        console.error("Submit tribute error:", e);
+        setText(byId("tributeStatus"), "Submit failed (unexpected error).");
+      });
     });
-  }
 
-  // ---------------------------------------
-  // PROFILE PHOTO (local + backend)
-  // ---------------------------------------
-
-  const photoInput = document.getElementById("profile-photo-url");
-  const photoFileInput = document.getElementById("profile-photo-file");
-  const photoSaveBtn = document.getElementById("profile-photo-save");
-  const photoStatus = document.getElementById("profile-photo-status");
-
-  const existingPhoto = loadProfilePhoto();
-  if (existingPhoto) {
-    if (photoInput)
-      photoInput.value = existingPhoto.startsWith("data:")
-        ? ""
-        : existingPhoto;
-    updateProfilePhotoPreview(existingPhoto);
-  }
-
-  if (photoFileInput) {
-    photoFileInput.addEventListener("change", () => {
-      const file = photoFileInput.files && photoFileInput.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith("image/")) {
-        setStatus(photoStatus, "Please choose an image file.", "salmon");
-        photoFileInput.value = "";
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result;
-        saveProfilePhoto(dataUrl);
-        updateProfilePhotoPreview(dataUrl);
-        setStatus(photoStatus, "Photo uploaded on this device.", "lightgreen");
-      };
-      reader.onerror = () => {
-        setStatus(photoStatus, "Could not read file.", "salmon");
-      };
-
-      reader.readAsDataURL(file);
+    // Feedback
+    byId("feedbackBtn")?.addEventListener("click", () => {
+      handleFeedback().catch((e) => {
+        console.error("Feedback error:", e);
+        setText(byId("feedbackStatus"), "Feedback failed (unexpected error).");
+      });
     });
+
+    // Initial UI state
+    refreshHeaderUser();
+
+    // Load photo preview from local storage if present
+    const savedPhoto = localStorage.getItem(LS_PHOTO);
+    if (savedPhoto) setProfilePhotoPreview(savedPhoto);
+
+    // Load tributes
+    loadPublicTributesFromUrl().catch(console.error);
+    if (currentUser?.id) loadMyTributes().catch(console.error);
   }
 
-  if (photoSaveBtn && photoInput) {
-    photoSaveBtn.addEventListener("click", () => {
-      const url = photoInput.value.trim();
-
-      if (!url) {
-        saveProfilePhoto("");
-        updateProfilePhotoPreview("");
-        setStatus(photoStatus, "Photo cleared.", "lightgreen");
-        return;
-      }
-
-      saveProfilePhoto(url);
-      updateProfilePhotoPreview(url);
-      setStatus(photoStatus, "Photo saved on this device.", "lightgreen");
-    });
-  }
-
-  // ---------------------------------------
-  // LOG OUT BUTTON
-  // ---------------------------------------
-
-  const logoutBtn = document.getElementById("logout");
-
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("aboutme_user");
-      localStorage.removeItem("aboutme_token");
-      window.location.reload();
-    });
+  // Run after DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", wire);
+  } else {
+    wire();
   }
 })();
