@@ -116,4 +116,3 @@ console.log("[AboutMe] app.js loaded. API_BASE =", API_BASE);
   } else {
     wire();
   }
-})();
