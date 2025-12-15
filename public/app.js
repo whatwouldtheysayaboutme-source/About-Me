@@ -2,8 +2,12 @@
   "use strict";
 
   // ✅ IMPORTANT: point to your backend service URL
-  const API_BASE = "https://about-me-b3nx.onrender.com";
+  const API_BASE = "https://about-me-api-9m4q.onrender.com";
   console.log("[AboutMe] app.js loaded. API_BASE =", API_BASE);
+
+  // ...rest of your code...
+})();
+
 
   // public/app.js
 const API_BASE = "https://about-me-api-9m4q.onrender.com";
