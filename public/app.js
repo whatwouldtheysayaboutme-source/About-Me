@@ -5,12 +5,6 @@
   const API_BASE = "https://about-me-api-9m4q.onrender.com";
   console.log("[AboutMe] app.js loaded. API_BASE =", API_BASE);
 
-  // ...the rest of your existing app.js code continues here...
-})();
-
-  // public/app.js
-console.log("[AboutMe] app.js loaded. API_BASE =", API_BASE);
-
   // -----------------------------
   // GLOBAL STATE
   // -----------------------------
@@ -58,7 +52,7 @@ console.log("[AboutMe] app.js loaded. API_BASE =", API_BASE);
   async function handleSendInvite() {
     const nameEl = byId("share-name");
     const emailEl = byId("share-email");
-    const statusEl = byId("share-status");
+    const statusEl = byId("inviteStatus");
 
     const ownerName = (nameEl?.value || "").trim() || (currentUser?.name || "");
     const toEmail = (emailEl?.value || "").trim();
@@ -98,7 +92,7 @@ console.log("[AboutMe] app.js loaded. API_BASE =", API_BASE);
       inviteBtn.addEventListener("click", () => {
         handleSendInvite().catch((e) => {
           console.error("[Invite] Uncaught error:", e);
-          const statusEl = byId("share-status");
+          const statusEl = byId("inviteStatus");
           setText(statusEl, "Invitation link created. Email failed (unexpected error).");
         });
       });
