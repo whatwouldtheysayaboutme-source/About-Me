@@ -520,4 +520,29 @@ async function handleSendInvite() {
   } else {
     wire();
   }
+  // -----------------------------
+// INVITE BUTTON CLICK HANDLER
+// -----------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("share-generate");
+
+  if (!btn) {
+    console.error("[Invite] Button #share-generate not found in DOM");
+    return;
+  }
+
+  btn.addEventListener("click", () => {
+    handleSendInvite().catch((e) => {
+      console.error("[Invite] Uncaught error:", e);
+      const statusEl = document.getElementById("share-status");
+      if (statusEl) {
+        statusEl.textContent =
+          "Invitation link created. Email failed (unexpected error).";
+      }
+    });
+  });
+
+  console.log("[Invite] share-generate button wired");
+});
+
 })();
