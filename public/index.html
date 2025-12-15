@@ -288,33 +288,69 @@
     <!-- =========================
          STEP 2 – INVITE FRIENDS
     ========================== -->
-    <section id="share" class="section share-section">
-      <p class="step-label">Step 2 – Invite friends &amp; family</p>
-      <h2>Share your <em class="aboutme">About Me</em> page</h2>
+ <section id="share" class="section share-section">
+  <p class="step-label">Step 2 – Invite friends &amp; family</p>
 
-      <p>
-        Send a personal invitation email to friends and family.
-        They’ll get a private link where they can write what you mean to them.
-      </p>
+  <h2>Share your <em class="aboutme">About Me</em> page</h2>
 
-      <div class="share-form">
-        <label>
-          Your name (as you want it to appear)
-          <input type="text" id="share-name" placeholder="Your Name" />
-        </label>
+  <p>
+    Send a personal invitation email to friends and family.
+    They’ll get a private link where they can write what you mean to them.
+  </p>
 
-        <label style="margin-top:0.75rem; display:block;">
-          Friend's email
-          <input type="email" id="share-email" placeholder="friend@example.com" />
-        </label>
+  <div class="share-form">
+    <label>
+      Your name (as you want it to appear)
+      <input
+        type="text"
+        id="inviteName"
+        placeholder="Your name"
+      />
+    </label>
 
-        <button class="btn primary" id="share-generate">
-          Send email invitation
-        </button>
+    <label style="margin-top:0.75rem; display:block;">
+      Friend’s email
+      <input
+        type="email"
+        id="inviteEmail"
+        placeholder="friend@example.com"
+      />
+    </label>
 
-        <p id="share-status" class="small-note"></p>
-      </div>
-    </section>
+    <button
+      type="button"
+      class="btn primary"
+      id="inviteSendBtn"
+      style="margin-top:0.75rem;"
+    >
+      Send email invitation
+    </button>
+
+    <p
+      id="inviteStatus"
+      class="small-note"
+      style="margin-top:0.5rem;"
+    ></p>
+
+    <!-- Optional: show link + copy -->
+    <input
+      type="text"
+      id="inviteLink"
+      readonly
+      style="margin-top:0.5rem; width:100%; display:none;"
+    />
+
+    <button
+      type="button"
+      id="inviteCopyBtn"
+      class="btn"
+      style="margin-top:0.5rem; display:none;"
+    >
+      Copy invite link
+    </button>
+  </div>
+</section>
+
 
     <!-- =========================
          STEP 3 – WRITE / SAVE MESSAGE
