@@ -61,6 +61,7 @@ const emailEl = byId("inviteEmail");
 
     const ownerName = (nameEl?.value || "").trim() || (currentUser?.name || "");
     const toEmail = (emailEl?.value || "").trim();
+console.log("[Invite] emailEl:", emailEl, "value:", emailEl?.value, "toEmail:", toEmail);
 
     if (!toEmail) {
       alert("Please enter your friend's email.");
