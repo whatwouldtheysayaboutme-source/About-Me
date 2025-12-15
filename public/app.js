@@ -1,13 +1,12 @@
 (function () {
   "use strict";
 
-  // ✅ IMPORTANT: point to your backend service URL
+  // ✅ IMPORTANT: point to your backend (API) service URL
   const API_BASE = "https://about-me-api-9m4q.onrender.com";
   console.log("[AboutMe] app.js loaded. API_BASE =", API_BASE);
 
-  // ...rest of your code...
+  // ...the rest of your existing app.js code continues here...
 })();
-
 
   // public/app.js
 console.log("[AboutMe] app.js loaded. API_BASE =", API_BASE);
