@@ -256,66 +256,55 @@
   // ------------------------------------------------------------
   // INVITES (THIS IS THE IMPORTANT PART)
   // ------------------------------------------------------------
-  function buildInviteUrl(ownerName) {
-    // Keep your existing format: https://<site>/?to=<NAME>#write
-    const to = encodeURIComponent(ownerName || "");
-    return `${window.location.origin}/?to=${to}#write`;
+ // -----------------------------
+// INVITES (THIS IS THE IMPORTANT PART)
+// -----------------------------
+function buildInviteUrl(ownerName) {
+  const to = encodeURIComponent(ownerName || "");
+  return `${window.location.origin}/?to=${to}#write`;
+}
+
+async function handleSendInvite() {
+  // These IDs MATCH your HTML exactly
+  const inviteNameEl  = document.getElementById("share-name");
+  const inviteEmailEl = document.getElementById("share-email");
+  const statusEl      = document.getElementById("share-status");
+
+  const ownerName =
+    (inviteNameEl?.value || "").trim() ||
+    (currentUser?.name || "");
+
+  const toEmail = (inviteEmailEl?.value || "").trim();
+
+  if (!toEmail) {
+    alert("Please enter your friend's email.");
+    return;
   }
 
-  async function handleSendInvite() {
-    const inviteNameEl = byId("inviteName");
-    const inviteEmailEl = byId("inviteEmail");
-    const statusEl = byId("inviteStatus");
-    const linkEl = byId("inviteLink");
+  const inviteUrl = buildInviteUrl(ownerName);
+  console.log("[Invite] Invite link:", inviteUrl);
 
-    const ownerName =
-      (inviteNameEl?.value || "").trim() ||
-      currentUser?.name ||
-      "";
-
-    const toEmail = (inviteEmailEl?.value || "").trim();
-    if (!toEmail) {
-      alert("Please enter your friend's email.");
-      return;
-    }
-
-    // Always generate link (works even if email fails)
-    const inviteUrl = buildInviteUrl(ownerName);
-    console.log("[Invite] Invite link:", inviteUrl);
-
-    if (linkEl) linkEl.value = inviteUrl;
-    setText(statusEl, "Invitation link created. Sending email...");
-
-    // Call the backend (this is what was missing before)
-    const { res, data, url } = await apiFetch("/api/send-invite-email", {
-      method: "POST",
-      body: JSON.stringify({ toEmail, ownerName, inviteUrl }),
-    });
-
-    if (!res.ok || !data?.ok) {
-      console.error("[Invite] Email failed:", { url, status: res.status, data });
-      setText(statusEl, `Invitation link created. Email failed: ${data?.error || res.status}`);
-      return;
-    }
-
-    setText(statusEl, "Email sent ✅");
-    console.log("[Invite] Email accepted by provider:", data);
+  if (statusEl) {
+    statusEl.textContent = "Invitation link created. Sending email...";
   }
 
-  async function handleCopyInviteLink() {
-    const linkEl = byId("inviteLink");
-    const statusEl = byId("inviteStatus");
-    const link = (linkEl?.value || "").trim();
-    if (!link) return;
+  const { res, data, url } = await apiFetch("/api/send-invite-email", {
+    method: "POST",
+    body: JSON.stringify({ toEmail, ownerName, inviteUrl }),
+  });
 
-    try {
-      await navigator.clipboard.writeText(link);
-      setText(statusEl, "Invite link copied ✅");
-    } catch (e) {
-      console.warn("Clipboard copy failed:", e);
-      alert("Copy failed — you can manually select the link and copy.");
+  if (!res.ok || !data?.ok) {
+    console.error("[Invite] Email failed:", { url, status: res.status, data });
+    if (statusEl) {
+      statusEl.textContent =
+        `Invitation link created. Email failed: ${data?.error || res.status}`;
     }
+    return;
   }
+
+  if (statusEl) statusEl.textContent = "Email sent ✅";
+  console.log("[Invite] Email accepted:", data);
+}
 
   // ------------------------------------------------------------
   // TRIBUTES
