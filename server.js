@@ -1,4 +1,3 @@
-// server.js
 "use strict";
 
 const express = require("express");
@@ -9,7 +8,7 @@ const bcrypt = require("bcryptjs");
 const sgMail = require("@sendgrid/mail");
 
 // -----------------------------
-// APP INIT (MUST COME BEFORE app.use)
+// APP INIT
 // -----------------------------
 const app = express();
 
@@ -17,21 +16,19 @@ const app = express();
 // CONFIG
 // -----------------------------
 app.use(cors());
-app.use(express.json({ limit: "2mb" })); // raise if you store big base64 photos
+app.use(express.json({ limit: "2mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI || "";
 
-// MUST be a VERIFIED SendGrid sender (Single Sender Verification or Domain Auth)
 const FROM_EMAIL = (process.env.FROM_EMAIL || "").trim();
 const SENDGRID_API_KEY = (process.env.SENDGRID_API_KEY || "").trim();
 
-// Mongo handle
 let db;
 
 // -----------------------------
-// SENDGRID INIT (optional, but will error if you try to send without it)
+// SENDGRID INIT
 // -----------------------------
 const HAS_SENDGRID = !!SENDGRID_API_KEY;
 if (HAS_SENDGRID) {
@@ -39,13 +36,12 @@ if (HAS_SENDGRID) {
 } else {
   console.warn("WARNING: SENDGRID_API_KEY not set. Invite emails will NOT send.");
 }
-
 if (!FROM_EMAIL) {
   console.warn("WARNING: FROM_EMAIL not set. Invite emails may fail.");
 }
 
 // -----------------------------
-// HELPERS
+// MODERATION HELPERS
 // -----------------------------
 const PROFANITY_LIST = [
   "fuck","fck","fuk","shit","bitch","bastard","asshole","dick","cunt","slut","whore",
@@ -118,6 +114,10 @@ function isValidEmail(email) {
 // CONNECT TO MONGODB
 // -----------------------------
 async function connectToMongo() {
+  if (!MONGODB_URI) {
+    console.error("ERROR: MONGODB_URI is not set.");
+    process.exit(1);
+  }
   try {
     const client = new MongoClient(MONGODB_URI);
     await client.connect();
@@ -130,7 +130,7 @@ async function connectToMongo() {
 }
 
 // -----------------------------
-// HEALTH + EMAIL STATUS (safe debug)
+// HEALTH + EMAIL STATUS
 // -----------------------------
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "API running" });
@@ -296,7 +296,7 @@ app.post("/api/tributes", async (req, res) => {
 });
 
 // -----------------------------
-// LIST TRIBUTES FOR LOGGED-IN USER (public + private)
+// LIST TRIBUTES FOR LOGGED-IN USER
 // -----------------------------
 app.get("/api/my-tributes", async (req, res) => {
   try {
@@ -329,7 +329,7 @@ app.get("/api/my-tributes", async (req, res) => {
 });
 
 // -----------------------------
-// GENERIC LIST TRIBUTES (PUBLIC ONLY)
+// PUBLIC TRIBUTES LIST
 // -----------------------------
 app.get("/api/tributes", async (req, res) => {
   try {
@@ -339,7 +339,7 @@ app.get("/api/tributes", async (req, res) => {
     const query = {};
     if (to && typeof to === "string") query.toName = to.trim();
 
-    // Only public (treat missing isPublic as public)
+    // Only public (treat missing as public)
     query.isPublic = { $ne: false };
 
     const items = await tributes
@@ -400,10 +400,7 @@ app.post("/api/profile-photo", async (req, res) => {
     }
 
     const users = db.collection("users");
-    await users.updateOne(
-      { _id: userObjectId },
-      { $set: { photoData: photoData || null } }
-    );
+    await users.updateOne({ _id: userObjectId }, { $set: { photoData: photoData || null } });
 
     return res.json({ ok: true });
   } catch (err) {
@@ -413,7 +410,7 @@ app.post("/api/profile-photo", async (req, res) => {
 });
 
 // -----------------------------
-// FEEDBACK (with moderation)
+// FEEDBACK (moderated)
 // -----------------------------
 app.post("/api/feedback", async (req, res) => {
   try {
@@ -446,7 +443,7 @@ app.post("/api/feedback", async (req, res) => {
 });
 
 // -----------------------------
-// LOOK UP USER BY NAME (for invites)
+// LOOK UP USER BY NAME
 // -----------------------------
 app.get("/api/user-by-name", async (req, res) => {
   try {
@@ -471,7 +468,7 @@ app.get("/api/user-by-name", async (req, res) => {
 });
 
 // -----------------------------
-// SEND INVITE EMAIL (robust)
+// SEND INVITE EMAIL (robust + truthful)
 // -----------------------------
 app.post("/api/send-invite-email", async (req, res) => {
   try {
@@ -480,13 +477,16 @@ app.post("/api/send-invite-email", async (req, res) => {
     if (!toEmail || !inviteUrl) {
       return res.status(400).json({ ok: false, error: "Missing email or invite link." });
     }
+
     if (!isValidEmail(toEmail)) {
       return res.status(400).json({ ok: false, error: "Invalid recipient email format." });
     }
+
     if (!HAS_SENDGRID) {
       console.error("SENDGRID_API_KEY missing on server (Render env var).");
       return res.status(500).json({ ok: false, error: "Email service not configured (missing API key)." });
     }
+
     if (!FROM_EMAIL) {
       console.error("FROM_EMAIL missing on server (Render env var).");
       return res.status(500).json({ ok: false, error: "Email service not configured (missing FROM_EMAIL)." });
@@ -494,7 +494,7 @@ app.post("/api/send-invite-email", async (req, res) => {
 
     const msg = {
       to: toEmail.trim(),
-      from: { email: FROM_EMAIL, name: "About Me" }, // must match your verified sender
+      from: { email: FROM_EMAIL, name: "About Me" },
       subject: `${ownerName || "A friend"} invited you to write a message`,
       text: `Use this private link:\n\n${inviteUrl}`,
       html: `
@@ -505,20 +505,28 @@ app.post("/api/send-invite-email", async (req, res) => {
     };
 
     const [resp] = await sgMail.send(msg);
-const statusCode = resp?.statusCode;
+    const statusCode = resp?.statusCode;
 
-console.log("SendGrid accepted request. statusCode:", statusCode, "to:", msg.to);
+    console.log("SendGrid accepted request. statusCode:", statusCode, "to:", msg.to);
 
-if (!statusCode || statusCode < 200 || statusCode >= 300) {
-  return res.status(502).json({
-    ok: false,
-    error: "Email rejected by provider",
-    statusCode: statusCode || null,
-  });
-}
+    if (!statusCode || statusCode < 200 || statusCode >= 300) {
+      return res.status(502).json({
+        ok: false,
+        error: "Email rejected by provider",
+        statusCode: statusCode || null,
+      });
+    }
 
-return res.json({ ok: true, statusCode });
-
+    return res.json({ ok: true, statusCode });
+  } catch (err) {
+    console.error("SendGrid ERROR:", err?.response?.body || err);
+    return res.status(500).json({
+      ok: false,
+      error: "Email delivery failed",
+      details: err?.response?.body?.errors || null,
+    });
+  }
+});
 
 // -----------------------------
 // START SERVER
@@ -529,4 +537,5 @@ async function start() {
     console.log(`Server running on port ${PORT}`);
   });
 }
+
 start();
