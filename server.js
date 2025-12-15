@@ -504,23 +504,21 @@ app.post("/api/send-invite-email", async (req, res) => {
       `,
     };
 
-    const response = await sgMail.send(msg);
+    const [resp] = await sgMail.send(msg);
+const statusCode = resp?.statusCode;
 
-    // Helpful server-side confirmation
-    const statusCode = response?.[0]?.statusCode;
-    console.log("SendGrid accepted request. statusCode:", statusCode, "to:", msg.to);
+console.log("SendGrid accepted request. statusCode:", statusCode, "to:", msg.to);
 
-    return res.json({ ok: true, statusCode: statusCode || 202 });
-  } catch (err) {
-    const details = err?.response?.body || err;
-    console.error("SendGrid send failed:", details);
-    return res.status(500).json({
-      ok: false,
-      error: "Email delivery failed",
-      details: typeof details === "object" ? details : String(details),
-    });
-  }
-});
+if (!statusCode || statusCode < 200 || statusCode >= 300) {
+  return res.status(502).json({
+    ok: false,
+    error: "Email rejected by provider",
+    statusCode: statusCode || null,
+  });
+}
+
+return res.json({ ok: true, statusCode });
+
 
 // -----------------------------
 // START SERVER
