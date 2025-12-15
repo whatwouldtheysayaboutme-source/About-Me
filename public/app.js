@@ -50,9 +50,14 @@
   }
 
   async function handleSendInvite() {
-    const nameEl = byId("share-name");
-    const emailEl = byId("share-email");
+   const nameEl  = byId("inviteName");
+const emailEl = byId("inviteEmail");
     const statusEl = byId("inviteStatus");
+56    if (!nameEl || !emailEl || !statusEl) {
+57      console.error("[Invite] Missing DOM elements", { nameEl, emailEl, statusEl });
+58      alert("Internal error: invite form not wired correctly.");
+59      return;
+60    }
 
     const ownerName = (nameEl?.value || "").trim() || (currentUser?.name || "");
     const toEmail = (emailEl?.value || "").trim();
