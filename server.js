@@ -491,18 +491,38 @@ app.post("/api/send-invite-email", async (req, res) => {
       console.error("FROM_EMAIL missing on server (Render env var).");
       return res.status(500).json({ ok: false, error: "Email service not configured (missing FROM_EMAIL)." });
     }
+const msg = {
+  to: toEmail.trim(),
+  from: { email: FROM_EMAIL, name: "About Me" },
+  replyTo: FROM_EMAIL,
+  subject: `${ownerName || "Someone"} invited you to leave a private message on About Me`,
+  text:
+    `Hi,\n\n` +
+    `${ownerName || "Someone"} is using About Me to collect a private message from friends and family.\n\n` +
+    `Write your message here:\n${inviteUrl}\n\n` +
+    `If you weren’t expecting this, you can ignore this email.\n\n` +
+    `— About Me (Hear it while you're here)\n`,
+  html: `
+    <div style="font-family:Arial,sans-serif;line-height:1.4">
+      <p>Hi,</p>
+      <p><strong>${ownerName || "Someone"}</strong> is using <strong>About Me</strong> to collect a private message from friends and family.</p>
+      <p style="margin:18px 0">
+        <a href="${inviteUrl}"
+           style="display:inline-block;padding:10px 14px;border-radius:8px;background:#2563eb;color:#fff;text-decoration:none">
+          Write your message
+        </a>
+      </p>
+      <p style="font-size:12px;color:#555">
+        Or paste this link into your browser:<br/>
+        <a href="${inviteUrl}">${inviteUrl}</a>
+      </p>
+      <p style="font-size:12px;color:#666;margin-top:18px">
+        If you weren’t expecting this, you can ignore this email.
+      </p>
+    </div>
+  `,
+};
 
-    const msg = {
-      to: toEmail.trim(),
-      from: { email: FROM_EMAIL, name: "About Me" },
-      subject: `${ownerName || "A friend"} invited you to write a message`,
-      text: `Use this private link:\n\n${inviteUrl}`,
-      html: `
-        <p><strong>${ownerName || "A friend"}</strong> invited you to write a message.</p>
-        <p><a href="${inviteUrl}">Click here to write your message</a></p>
-        <p style="font-size:12px;color:#666;">If you didn’t expect this, you can ignore this email.</p>
-      `,
-    };
 
     const [resp] = await sgMail.send(msg);
     const statusCode = resp?.statusCode;
